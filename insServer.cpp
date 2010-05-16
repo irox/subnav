@@ -133,8 +133,7 @@ int main(int argc, char **argv) {
     os5500Init(NULL);
   }
 
-  os5500GetXYZ(xyz);
-  os5500GetABC(hpr);
+  os5500GetABCnXYZ(hpr, xyz);
 
   x(1) = 0.0;
   x(2) = 0.0;
@@ -167,18 +166,8 @@ int main(int argc, char **argv) {
   int changeCount = 0;
   int changeCounta[3] = { 0, 0, 0 };
 
-//  double accel = 0.0 ;
   for (int i = 2; i <= NTRY; ++i) {
-/*    if (i<41) {
-      accel = accel + 0.1;
-      z(1) = accel;
-    } else if (i<60) {
-      accel = accel - 0.2;
-      z(1) = accel;
-    } else {
-      z(1) = 0.0;
-    }
-*/
+
     if (hpr[0] == lastHeading) {
       changeCount = 0;
     } else if (changeCount > 3) {
