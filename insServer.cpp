@@ -43,15 +43,13 @@ float adjustHeading(float rawHeading) {
   return rawHeading;
 }
 
-int main() {
+int main(int argc, char **argv) {
 
         ifstream dataInput;
         ofstream dataOutput;
         std::string tmpStr;
 
   const unsigned NTRY = 10000;
-  //      const unsigned n = 4;   //nb states
-  //      const unsigned m = 2;   //nb measures
 
   SixDofEKF filter;
 
@@ -128,8 +126,13 @@ int main() {
   Vector z(6);
 
   // Initialise state vector.
-//  os5500Init("os5500.sample");
-  os5500Init(NULL);
+  if (argc == 2) {
+   // cout << "args = " << argv[1] << endl;
+    os5500Init(argv[1]);
+  } else {
+    os5500Init(NULL);
+  }
+
   os5500GetXYZ(xyz);
   os5500GetABC(hpr);
 
@@ -150,8 +153,6 @@ int main() {
   x(15) = xyz[2] * 9.8;
 
   filter.init(x, P0);
- 
-//  cout << "xp(" << ":," << 1<<") = " << filter.getX()<<endl;
  
   ofstream data;
   data.open ("/tmp/ins.dat");

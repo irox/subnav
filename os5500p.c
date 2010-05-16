@@ -186,6 +186,8 @@ int parseOS5500Line(char * input, struct os5500_data *data) {
 
 }
 
+static int logfd = -1;
+
 int openOS5500(char * filename, int baud) {
   int fd;
   struct termios newtio;
@@ -222,12 +224,10 @@ int openOS5500(char * filename, int baud) {
     fd = -1;
   }
 
-/*  logfd = open("/tmp/os5500.log",O_RDWR | O_NOCTTY);
+  logfd = open("/tmp/os5500.log", O_CREAT | O_RDWR );
   if (logfd < 0) {
     perror("open");
-        return logfd;
-    }
-*/
+  }
 
   return fd;
 }
@@ -254,15 +254,17 @@ int readOS5500Line(int fd, char *buffer,int buffSize) {
        )  {
     while( read(fd,bufPtr,1) == 0) {};
   }
+  readSize++;
 
 
   for (;
        bufPtr[0] != '*' && bufPtr != buffer + buffSize;
        ) {
-    bufPtr++;
+    bufPtr++; readSize++;
     while( read(fd,bufPtr,1) == 0){} ;
   }
 
+  // TODO(irox): Remove potential buffer overrun.
   // read checksum
   bufPtr++;
   read(fd,bufPtr++,1);
@@ -270,10 +272,15 @@ int readOS5500Line(int fd, char *buffer,int buffSize) {
   read(fd,bufPtr++,1);
   bufPtr = '\0';
 
+  readSize = readSize + 4;
+
+  if (logfd != -1) {
+    write(logfd, buffer, readSize);
+  }
+
 }
 
 static int fd = -1;
-static int logfd = -1;
 
 void os5500Init(char *name) {
 
