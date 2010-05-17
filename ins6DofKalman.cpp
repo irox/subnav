@@ -1,4 +1,5 @@
 #include "ins6DofKalman.h"
+#include "ins3DCalcs.h"
 #include <cmath>
 #include <iostream>
 
@@ -842,11 +843,10 @@ void SixDofEKF::makeProcess() {
   #ifdef DBUG_PROCSS
   cout << " Components of X(" << x_(1) << ") = (" << xa[1] << ", " <<  xa[2] << ", " << xa[3]  << ")" << endl;
   #endif
-  if (count > trigger) {
-    x_(2) = x(2) + x(1) * period;
-    x_(3) = x(3) + x(2) * period + 0.5 * x(1) * period * period;
-  }
-
+  
+  x_(2) = ins3DCalcs::velocity(x(2), x(1), period);
+  x_(3) = ins3DCalcs::distance(x(3), x(2), x(1), period);
+  
   ya[1] = ax * sin(a) * cos(b);
   ya[2] = ay * ( sin(a) * sin(b) * sin(g) + cos(a) * cos(g) );
   ya[3] = az * ( sin(a) * sin(b) * cos(g) - cos(a) * sin(g) );
@@ -857,10 +857,8 @@ void SixDofEKF::makeProcess() {
   cout << " Components of Y(" << x_(4) << ") = (" << ya[1]  << ", " <<  ya[2]  << ", " <<  ya[3] << ")" << endl;
   #endif
 
-  if (count > trigger) {
-    x_(5) = x(5)  +  x(4) * period;
-    x_(6) = x(6)  +  x(5) * period  +  0.5 * x(4) * period * period;
-  }
+  x_(5) = ins3DCalcs::velocity(x(5), x(4), period);
+  x_(6) = ins3DCalcs::distance(x(6), x(5), x(4), period);
 
   za[1] = - ax * sin(b);
   za[2] = ay * cos(b) * sin(g);
@@ -871,10 +869,8 @@ void SixDofEKF::makeProcess() {
   cout << " Components of Z(" << za[1] + za[2] + za[3] << ") = (" << za[1] << ", " <<  za[2] << ", " << za[3] << ")" << endl;
  #endif
 
-  if (count > trigger) {
-    x_(8) = x(8) + x(7) * period;
-    x_(9) = x(9) + x(8) * period + 0.5 * x(7) * period * period;
-  }
+  x_(8) = ins3DCalcs::velocity(x(9), x(8), period);
+  x_(9) = ins3DCalcs::distance(x(10), x(9), x(8), period);
 
   count++;
 
@@ -898,7 +894,7 @@ float roll = acos( x(7) / abs_pa);
   float pitch = acos( x(13) / abs_pa) - M_PI / 2;
   float roll =  - acos( x(14) / abs_pa2) + M_PI / 2;
 
-  #ifdef DBUG_PROCSS
+#ifdef DBUG_PROCSS
   cout << " Heading (" << x(11) * 57.29578 << ", ^" << heading * 57.29578 << ")   pitch(" << x(10) * 57.29578 << ", " << pitch * 57.29578 << ")  roll(" << x(12) * 57.29578 << ", " << roll * 57.29578 << ")" << endl;
   #endif
 
