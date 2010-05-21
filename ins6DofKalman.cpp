@@ -342,8 +342,8 @@ void SixDofEKF::makeBaseW() {
   W(j,2) = 1.0;
   W(j,3) = 0.0;
   W(j,4) = 0.0;
-  W(j,5) = 1.0;
-  W(j,6) = 1.0;
+  W(j,5) = 0.0;
+  W(j,6) = 0.0;
 
   j = 12;
   W(j,1) = 0.0;
@@ -382,12 +382,13 @@ void SixDofEKF::makeBaseW() {
 void SixDofEKF::makeBaseQ() {
   int j;
 
-  float sd1 = 0.002; // accel vector
+  float sd1 = 0.00006; // accel vector
+  float sd1a = 0.0002;
   float sd2 = sd1 * period; // velocity vector
   float sd3 = sd1 * period * period; // distance
 
-  float sd4 = 0.035 / 57.3; // gyro
-  float sd5 = 3.5 / 57.3; // compass
+  float sd4 = 0.0035 / 57.3; // gyro
+  float sd5 = 0.0035 / 57.3; // compass
   // 15 x 15 diag matrix.
 
   j = 1;
@@ -607,7 +608,7 @@ void SixDofEKF::makeBaseQ() {
   Q(j,10) = 0.0;
   Q(j,11) = 0.0;
   Q(j,12) = 0.0;
-  Q(j,13) = sd1;
+  Q(j,13) = sd1a;
   Q(j,14) = 0.0;
   Q(j,15) = 0.0;
 
@@ -625,7 +626,7 @@ void SixDofEKF::makeBaseQ() {
   Q(j,11) = 0.0;
   Q(j,12) = 0.0;
   Q(j,13) = 0.0;
-  Q(j,14) = sd1;
+  Q(j,14) = sd1a;
   Q(j,15) = 0.0;
 
   j = 15;
@@ -643,7 +644,7 @@ void SixDofEKF::makeBaseQ() {
   Q(j,12) = 0.0;
   Q(j,13) = 0.0;
   Q(j,14) = 0.0;
-  Q(j,15) = sd1;
+  Q(j,15) = sd1a;
 }
 
 void SixDofEKF::makeQ() {
@@ -761,9 +762,10 @@ void SixDofEKF::makeBaseV() {
 }
 
 void SixDofEKF::makeBaseR() {
-  float sc2x = 0.015 ;
-  float sc2 = 0.015;
-  float sc1 = 0.01 * 0.01; //0.1 * 0.1;
+  float sc2x = 0.00015 ;
+  float sc2 = 0.00015;
+  float sc1 = 0.001; // * 0.001; //0.1 * 0.1;
+  float sc3 = 0.001;
 
   R(1,1) = sc1;
   R(1,2) = 0.0;
@@ -773,7 +775,7 @@ void SixDofEKF::makeBaseR() {
   R(1,6) = 0.0;
 
   R(2,1) = 0.0;
-  R(2,2) = sc1;
+  R(2,2) = sc3;
   R(2,3) = 0.0;
   R(2,4) = 0.0;
   R(2,5) = 0.0;
@@ -864,7 +866,7 @@ void SixDofEKF::makeProcess() {
   za[2] = ay * cos(b) * sin(g);
   za[3] = az * cos(b) * cos(g);
 
-  x_(7) = za[1] + za[2] + za[3] - 9.8 - 0.03 ; // - 9.8 - 0.025 / 2;
+  x_(7) = za[1] + za[2] + za[3] - 9.8; // - 9.8 - 0.025 / 2;
   #ifdef DBUG_PROCSS
   cout << " Components of Z(" << za[1] + za[2] + za[3] << ") = (" << za[1] << ", " <<  za[2] << ", " << za[3] << ")" << endl;
  #endif
@@ -898,7 +900,7 @@ float roll = acos( x(7) / abs_pa);
   cout << " Heading (" << x(11) * 57.29578 << ", ^" << heading * 57.29578 << ")   pitch(" << x(10) * 57.29578 << ", " << pitch * 57.29578 << ")  roll(" << x(12) * 57.29578 << ", " << roll * 57.29578 << ")" << endl;
   #endif
 
-  x_(10) = /*x(10); */ pitch;
+  x_(10) = /* x(10); //*/ pitch;
   x_(11) = x(11);
   x_(12) = /* x(12); //*/ roll;
   x_(13) = x(13);
