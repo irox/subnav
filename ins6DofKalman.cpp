@@ -382,13 +382,13 @@ void SixDofEKF::makeBaseW() {
 void SixDofEKF::makeBaseQ() {
   int j;
 
-  float sd1 = 0.00006; // accel vector
-  float sd1a = 0.0002;
+  float sd1 = 0.06; // accel vector
+  float sd1a = 0.002;
   float sd2 = sd1 * period; // velocity vector
   float sd3 = sd1 * period * period; // distance
 
-  float sd4 = 0.0035 / 57.3; // gyro
-  float sd5 = 0.0035 / 57.3; // compass
+  float sd4 = 0.0035; // / 57.3; // gyro
+  float sd5 = 0.0035; // / 57.3; // compass
   // 15 x 15 diag matrix.
 
   j = 1;
@@ -762,8 +762,8 @@ void SixDofEKF::makeBaseV() {
 }
 
 void SixDofEKF::makeBaseR() {
-  float sc2x = 0.00015 ;
-  float sc2 = 0.00015;
+  float sc2x = 0.0015 ;
+  float sc2 = 0.0015;
   float sc1 = 0.001; // * 0.001; //0.1 * 0.1;
   float sc3 = 0.001;
 
