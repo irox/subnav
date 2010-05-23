@@ -22,7 +22,7 @@ extern "C" {
 void drawSolidScaledSubmarineHull(double scale, float slices);
 void generateMesh(float mesh[][3], int);
 void os5500GetABC(float hpr[3]);
-void os5500Init();
+void os5500Init(char *name);
 }
 
 int hullChildNum;
@@ -96,6 +96,7 @@ SoSeparator* createSubmarine() {
   SoSeparator *root = new SoSeparator;
   root->ref();
 
+  
   SoMaterial *material = new SoMaterial;
   material->diffuseColor.setValue(1.0, 0.2, 0.2);
   material->shininess.setValue(1.0);
@@ -106,18 +107,37 @@ SoSeparator* createSubmarine() {
   transform->translation.setValue(0.0, 0.0, -9.0);
   root->addChild(transform);
 
-  // Load the submarine hull mesh.
-  SoCoordinate3 * coords = new SoCoordinate3;
-  int slices = 8;
-  int meshSize = (slices * 2 + 1) * 41;
-  float subHullMesh[meshSize][3];
-  generateMesh(subHullMesh, slices);
-  coords->point.setValues(0, meshSize, subHullMesh);
-  root->addChild(coords);
-  SoQuadMesh * mesh = new SoQuadMesh;
-  mesh->verticesPerRow = slices * 2 + 1;
-  mesh->verticesPerColumn = 41;
-  root->addChild(mesh);
+  SoInput in;
+  if (in.openFile("models/subhull-0.1.wrl")) {
+    SoRotationXYZ *hullRot =  new SoRotationXYZ;
+    hullRot->axis.setValue(SoRotationXYZ::Y);
+    hullRot->angle.setValue(-M_PI/2.0f);
+    root->addChild(hullRot);
+
+    SoSeparator *hull = SoDB::readAll(&in);
+    root->addChild(hull);
+
+    SoRotationXYZ *hullRotBack =  new SoRotationXYZ;
+    hullRotBack->axis.setValue(SoRotationXYZ::Y);
+    hullRotBack->angle.setValue(M_PI/2.0f);
+    root->addChild(hullRotBack);
+
+   
+  } else {
+
+    // Load the submarine hull mesh.
+    SoCoordinate3 * coords = new SoCoordinate3;
+    int slices = 8;
+    int meshSize = (slices * 2 + 1) * 41;
+    float subHullMesh[meshSize][3];
+    generateMesh(subHullMesh, slices);
+    coords->point.setValues(0, meshSize, subHullMesh);
+    root->addChild(coords);
+    SoQuadMesh * mesh = new SoQuadMesh;
+    mesh->verticesPerRow = slices * 2 + 1;
+    mesh->verticesPerColumn = 41;
+    root->addChild(mesh);
+  }
 
   // Transform for the conningtower.
   transform = new SoTransform;
@@ -130,16 +150,51 @@ SoSeparator* createSubmarine() {
   cylinder->radius.setValue(1.5);
   root->addChild(cylinder);
 
-  return root;
+  // Tail Fins.
+ 
+  // Make it and X tail.
+  SoRotationXYZ *tailRot = new SoRotationXYZ;
+//  tailRot->axis.setValue(SoRotationXYZ::Z);
+//  tailRot->angle.setValue(M_PI/4.0f);
+//  root->addChild(tailRot);
+
+  transform = new SoTransform;
+  transform->translation.setValue(0.0, -3.0, 12.0);
+  transform->scaleFactor.setValue(0.10, 2.0, 1.0);
+  root->addChild(transform);
+
+  cylinder = new SoCylinder;
+  cylinder->radius.setValue(0.5);
+  root->addChild(cylinder);
+
+  tailRot = new SoRotationXYZ;
+  tailRot->axis.setValue(SoRotationXYZ::Z);
+  tailRot->angle.setValue(M_PI/2.0f);
+  root->addChild(tailRot);
+
+  transform = new SoTransform;
+  //transform->translation.setValue(0.0, -3.0, 12.0);
+  transform->scaleFactor.setValue(0.0025, 40.0, 0.1250);
+  root->addChild(transform);
+
+  cylinder = new SoCylinder;
+  cylinder->radius.setValue(3.5);
+  root->addChild(cylinder);
+
+return root;
 }
 
 int main(int argc, char **argv)
 {
   // parse args
-  // TODO:
+  // nsform = new SoTransform;
+  //   transform->translation.setValue(0.0, -3.0, 12.0);
+  //     transform->scaleFactor.setValue(0.10, 2.0, 1.0);
+  //       root->addChild(transform);
+  //       TODO:
   //
  
-  os5500Init();
+  os5500Init(NULL);
   os5500GetABC(baseHpr);
   Widget window = SoXt::init(argv[0]);
 
@@ -207,8 +262,8 @@ int main(int argc, char **argv)
   root->addChild(textSep);   
 
   // Level line indicator.
-  SoCoordinate3 * lliCoords = new SoCoordinate3;
-  SoCoordinate3 * llfCoords = new SoCoordinate3;
+  SoCoordinate3 * lliCoords = new SoCoordinate3; //indicator
+  SoCoordinate3 * llfCoords = new SoCoordinate3; // fixed line
   SoSeparator *lliSep = root; // new SoSeparator;
   SoTransform *lliTrans = new SoTransform;
   SoResetTransform *lliReset = new SoResetTransform;
@@ -237,7 +292,10 @@ int main(int argc, char **argv)
   SoLineSet *lineSet = new SoLineSet;
   lineSet->numVertices.setValues(0,1,verts);
   rotLliSep->addChild(lineSet);
-  lliSep->addChild(rotLliSep);
+  // Load the submarine hull mesh.
+  rotLliSep->addChild(rotLliSep);
+  lliSep->addChild(createSubmarine());
+
 //  root->addChild(lliSep);
 
   // The mechinism for updating the position.
