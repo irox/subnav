@@ -16,7 +16,7 @@ all: $(PROGRAM) insserver
 
 .SUFFIXES: .cpp .o
 
-$(PROGRAM): main.o subHull.o subHullMesh.o os5500p.o subHullLevelIndicator.o subHullOInv.o
+$(PROGRAM): main.o subHull.o subHullMesh.o os5500p.o subHullLevelIndicator.o subHullOInv.o subHull2d.o
 	$(LD) $(LDFLAGS) $^ -o $(PROGRAM)
 
 insserver: ins6DofKalman.o insServer.o /home/irox/Source/kalman/kalman/kstatics.o os5500p.o

@@ -5,6 +5,7 @@
 #include <Inventor/nodes/SoTransform.h>
 
 #include "subHullOInv.h"
+#include "subHull2d.h"
 
 void SubHullLevelIndicator::updateSubmarinePitchLevelIndicator(float pitch) {
 //  SoRotationXYZ *rotatorLli = (SoRotationXYZ *)(root->getChild(lliLineIndex));
@@ -87,7 +88,7 @@ SoSeparator *SubHullLevelIndicator::createSubmarinePitchLevelIndicator(float x, 
   rotLliSep->addChild(rot);
 */
   lliSep->addChild(createSubmarine());
-
+// lliSep->addChild(create2dSubHull(0,0,0));
 //  root->addChild(lliSep);
   return lliSep;
 }
