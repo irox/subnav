@@ -1,7 +1,7 @@
 
 #include <math.h>
 
-double framepointsXY[20][2] = {
+float hullFramepointsXY[20][2] = {
             { 0.65, 0.75 },
             { 1, 0.977 },
             { 2, 1.567 },
@@ -23,12 +23,15 @@ double framepointsXY[20][2] = {
             { 18, 0.381 },
             { 19, 0.04}};
 
+void generateHullMesh(float mesh[][3], int slices) {
+   generateMesh(mesh, hullFramepointsXY, 0, 20, slices);
+}
+ 
 
-void generateMesh(float mesh[][3], int slices) {
+void generateMesh(float mesh[][3], float framepointsXY[20][2], int first, int last, int slices) {
 
   float angle, rad, distance;
   int vert = 0;
-  int last = 20;
   int i;
   // Draw the end of sub around the main view port.
 /*  rad = framepointsXY[0][1];
@@ -41,7 +44,7 @@ void generateMesh(float mesh[][3], int slices) {
   }
   */                    
   // Draw the outside of the hull.
-  for (i=0; i < last; i++) {
+  for (i=first; i < last; i++) {
     distance = framepointsXY[i][0];
     rad = framepointsXY[i][1];
     for( angle = 0.0f; angle < (2.0 * M_PI); angle += (M_PI/slices)) {
@@ -58,7 +61,7 @@ void generateMesh(float mesh[][3], int slices) {
   }
 
   // Draw the inside of the hull.
-  for (i=last; i >= 0; i--) {
+  for (i=last; i >= first; i--) {
     distance = framepointsXY[i][0];
     rad = framepointsXY[i][1];
     for( angle = 0.0f; angle < (2.0 * M_PI); angle += (M_PI/slices)) {

@@ -11,7 +11,7 @@
 
 extern "C" {
 //void drawSolidScaledSubmarineHull(double scale, float slices);
-void generateMesh(float mesh[][3], int);
+void generateHullMesh(float mesh[][3], int);
 }
 
 SoSeparator* createSubmarine() {
@@ -30,7 +30,7 @@ SoSeparator* createSubmarine() {
   root->addChild(transform);
 
   SoInput in;
-  if (in.openFile("models/subhull-0.1.wrl")) {
+  if ( 0 /*in.openFile("models/subhull-0.1.wrl")*/) {
     SoRotationXYZ *hullRot =  new SoRotationXYZ;
     hullRot->axis.setValue(SoRotationXYZ::Y);
     hullRot->angle.setValue(-M_PI/2.0f);
@@ -52,7 +52,7 @@ SoSeparator* createSubmarine() {
     int slices = 8;
     int meshSize = (slices * 2 + 1) * 41;
     float subHullMesh[meshSize][3];
-    generateMesh(subHullMesh, slices);
+    generateHullMesh(subHullMesh, slices);
     coords->point.setValues(0, meshSize, subHullMesh);
     root->addChild(coords);
     SoQuadMesh * mesh = new SoQuadMesh;
