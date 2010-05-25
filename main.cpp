@@ -177,12 +177,12 @@ int main(int argc, char **argv)
   root->addChild(textSep);   
 
   // Draw pitch level indicator.
-  SoTransform *pliTrans = new SoTransform;
-  pliTrans->translation.setValue(-4.0, -8.0, 0.0);
-  root->addChild(pliTrans);
+//  SoTransform *pliTrans = new SoTransform;
+//  pliTrans->translation.setValue(-4.0, -8.0, 0.0);
+//  root->addChild(pliTrans);
 
   leveIndicator = new SubHullLevelIndicator();
-  root->addChild(leveIndicator->createSubmarinePitchLevelIndicator(-4.0, -8.0, 0.0));
+  root->addChild(leveIndicator->createSubmarinePitchLevelIndicator(15.0, -8.0, 0.0));
 
   // Level line indicator.
   SoCoordinate3 * lliCoords = new SoCoordinate3; //indicator

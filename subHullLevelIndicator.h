@@ -2,6 +2,7 @@
 
 #include <Inventor/nodes/SoSeparator.h>
 #include <Inventor/nodes/SoRotationXYZ.h>
+#include <Inventor/nodes/SoText2.h>
 
 class SubHullLevelIndicator {
 
@@ -13,5 +14,6 @@ public:
 
 private:
     SoRotationXYZ *pitchRotator;
+    SoText2 *pitchText;
 };
 
