@@ -12,6 +12,7 @@
 extern "C" {
 //void drawSolidScaledSubmarineHull(double scale, float slices);
 void generateHullMesh(float mesh[][3], int);
+void generateForwardMBT(float mesh[][3], int);
 }
 
 SoSeparator* createSubmarine() {
@@ -29,8 +30,9 @@ SoSeparator* createSubmarine() {
   transform->translation.setValue(0.0, 0.0, -9.0);
   root->addChild(transform);
 
+  int slices = 8;
   SoInput in;
-  if ( 0 /*in.openFile("models/subhull-0.1.wrl")*/) {
+  if ( in.openFile("models/subhull-0.1.wrl")) {
     SoRotationXYZ *hullRot =  new SoRotationXYZ;
     hullRot->axis.setValue(SoRotationXYZ::Y);
     hullRot->angle.setValue(-M_PI/2.0f);
@@ -49,7 +51,6 @@ SoSeparator* createSubmarine() {
 
     // Load the submarine hull mesh.
     SoCoordinate3 * coords = new SoCoordinate3;
-    int slices = 8;
     int meshSize = (slices * 2 + 1) * 41;
     float subHullMesh[meshSize][3];
     generateHullMesh(subHullMesh, slices);
@@ -60,6 +61,18 @@ SoSeparator* createSubmarine() {
     mesh->verticesPerColumn = 41;
     root->addChild(mesh);
   }
+
+  // generateForwardMBT
+  int meshSize = (slices * 2 + 1) * 11;
+  float subFMBTMesh[meshSize][3];
+  generateForwardMBT(subFMBTMesh, slices);
+  SoCoordinate3 * mbtCoords = new SoCoordinate3;
+  mbtCoords->point.setValues(0, meshSize, subFMBTMesh);
+  root->addChild(mbtCoords);
+  SoQuadMesh * mbtMesh = new SoQuadMesh;
+  mbtMesh->verticesPerRow = slices * 2 + 1;
+  mbtMesh->verticesPerColumn = 11;
+  root->addChild(mbtMesh);
 
   // Transform for the conningtower.
     transform = new SoTransform;

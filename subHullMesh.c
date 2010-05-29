@@ -1,6 +1,7 @@
 
 #include <math.h>
 
+
 float hullFramepointsXY[20][2] = {
             { 0.65, 0.75 },
             { 1, 0.977 },
@@ -25,6 +26,19 @@ float hullFramepointsXY[20][2] = {
 
 void generateHullMesh(float mesh[][3], int slices) {
    generateMesh(mesh, hullFramepointsXY, 0, 20, slices);
+}
+
+generateForwardMBT(float mesh[][3], int slices) {
+float MBTFramepointsXY[20][2] = {
+            { 0.65, 0.85 },
+            { 1, 1.077 },
+            { 2, 1.667 },
+            { 3, 2.03 },
+            { 4, 2.198 },
+            { 5, 2.235 },
+            { 6, 2.304 }};
+   generateMesh(mesh, MBTFramepointsXY, 0, 5, slices);
+
 }
  
 
