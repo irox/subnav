@@ -17,9 +17,11 @@
 #include <Inventor/nodes/SoLineSet.h>
 
 #include <sstream>
+#include "rcs.hh"
 
 #include "subHullLevelIndicator.h"
 #include "subHullOInv.h"
+#include "nmlNav.h"
 
 extern "C" {
 void drawSolidScaledSubmarineHull(double scale, float slices);
@@ -51,7 +53,36 @@ void updateModel(void *data, SoSensor *) {
 
   // Get compass data.
   float hpr[3];
-  os5500GetABC(hpr);
+//  os5500GetABC(hpr);
+  NML navdata_nml(ex_format, "nav_buf1", "SubUI", "config.nml");
+  switch(navdata_nml.read())
+		{
+		case -1:
+			rcs_print( "A communications error occurred.\n");
+//			quit = 1;
+                        return;
+			break;
+
+		case 0:
+			/* The buffer contains the same message */
+			/* you read last time. */
+			break;
+
+/*		case EXAMPLE_MSG_TYPE:
+			example_msg_ptr = (EXAMPLE_MSG *)example_nml.get_address();
+			rcs_print(" We have a new example message. \n");
+			rcs_print(" The value of its members are:\n ");
+			rcs_print(" f=%f, c=%c, i=%d\n ",
+				example_msg_ptr->f,
+				example_msg_ptr->c,
+				example_msg_ptr->i);
+			quit = 1;
+			break;
+*/		}
+  NAVDATA_MSG *nav_msg = (NAVDATA_MSG*) navdata_nml.get_address();
+  hpr[0] = nav_msg->heading;
+  hpr[1] = nav_msg->pitch;
+  hpr[2] = nav_msg->roll;
 
   rotatorX->angle.setValue((hpr[1] / 360.0) * 2 * M_PI);
   rotatorY->angle.setValue(((baseHpr[0] - hpr[0]) / 360.0) * 2 * M_PI);
@@ -59,7 +90,7 @@ void updateModel(void *data, SoSensor *) {
 
   // update lli.
   SoRotationXYZ *rotatorLli = (SoRotationXYZ *)(root->getChild(lliLineIndex));
-  printf("lli angle %f\n", rotatorLli->angle.getValue());  
+//  printf("lli angle %f\n", rotatorLli->angle.getValue());  
 rotatorLli->angle.setValue(-(hpr[2] / 360) * 2 * M_PI);
 
   leveIndicator->updateSubmarinePitchLevelIndicator(hpr[1]);
@@ -109,8 +140,8 @@ int main(int argc, char **argv)
   //       TODO:
   //
  
-  os5500Init(NULL);
-  os5500GetABC(baseHpr);
+  //os5500Init(NULL);
+ // os5500GetABC(baseHpr);
   Widget window = SoXt::init(argv[0]);
 
   if (window == NULL) exit(1);
