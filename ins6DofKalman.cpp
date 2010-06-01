@@ -250,9 +250,9 @@ void SixDofEKF::makeA() {
   A(j, 1) = - x(13) * cos(x(11)) * sin(x(10)) + x(14) * cos(x(11)) * cos(x(10)) * sin(x(12)) + x(15) * cos(x(11)) * cos(x(10)) * cos(x(12));
   A(j, 4) = - x(13) * sin(x(11)) * sin(x(10)) + x(14) * sin(x(11)) * cos(x(10)) * sin(x(12));
   A(j, 7) = - ax * cos(b) - ay * sin(b) * sin(g) - az * sin(b) * cos(g);
-  A(j,13) = -((1 / (az*az + ay*ay + ax*ax)) - (2*ax*ax / (  (az*az + ay*ay + ax*ax)*(az*az + ay*ay + ax*ax) )))/(sqrt(1 - (ax*ax/(  (az*az + ay*ay + ax*ax)*(az*az + ay*ay + ax*ax) ))));
-  A(j,14) = 2 * ax * ay / ((az*az + ay*ay + ax*ax)*(az*az + ay*ay + ax*ax) * sqrt(1 - (ax*ax / ((az*az + ay*ay + ax*ax)*(az*az + ay*ay + ax*ax)))));
-  A(j,15) = 2 * ax * az / ((az*az + ay*ay + ax*ax)*(az*az + ay*ay + ax*ax) * sqrt(1 - (ax*ax / ((az*az + ay*ay + ax*ax)*(az*az + ay*ay + ax*ax)))));
+//  A(j,13) = -((1 / (az*az + ay*ay + ax*ax)) - (2*ax*ax / (  (az*az + ay*ay + ax*ax)*(az*az + ay*ay + ax*ax) )))/(sqrt(1 - (ax*ax/(  (az*az + ay*ay + ax*ax)*(az*az + ay*ay + ax*ax) ))));
+//  A(j,14) = 2 * ax * ay / ((az*az + ay*ay + ax*ax)*(az*az + ay*ay + ax*ax) * sqrt(1 - (ax*ax / ((az*az + ay*ay + ax*ax)*(az*az + ay*ay + ax*ax)))));
+//  A(j,15) = 2 * ax * az / ((az*az + ay*ay + ax*ax)*(az*az + ay*ay + ax*ax) * sqrt(1 - (ax*ax / ((az*az + ay*ay + ax*ax)*(az*az + ay*ay + ax*ax)))));
 
   j = 11;
   A(j, 1) = - ax * sin(a) * cos(b) + ay * ( - sin(a) * sin(b) * sin(g) - cos(a) * cos(g) ) + az * ( -sin(a) * sin(b) * cos(g) + cos(a) * cos(g));
@@ -262,8 +262,8 @@ void SixDofEKF::makeA() {
   A(j, 1) = ay * ( cos(a) * sin(b) * cos(g) + sin(a) * sin(g) ) + az * ( -cos(a) * sin(b) * sin(g) + sin(a) * cos(g) ) ;
   A(j, 4) = ay * ( sin(a) * sin(b) * cos(g) - cos(a) * sin(g)) + az * (- sin(a) * sin(b) * sin(g) - cos(a) * cos(g));
   A(j, 7) = ay * cos(b) * cos(g) - az  * cos(b) * sin(g);
-  A(j,14) = (1 / (az*az + ay*ay) - (2 * ay * ay / ((az*az + ay*ay) * (az*az + ay*ay)))) / sqrt(1 - (ay * ay / ((az*az + ay*ay) * (az*az + ay*ay))));
-  A(j,15) = 2 * ay * az / ((az*az + ay*ay)*(az*az + ay*ay) * sqrt(1 - (ay*ay / ((az*az + ay*ay)*(az*az + ay*ay)))));
+//  A(j,14) = (1 / (az*az + ay*ay) - (2 * ay * ay / ((az*az + ay*ay) * (az*az + ay*ay)))) / sqrt(1 - (ay * ay / ((az*az + ay*ay) * (az*az + ay*ay))));
+//  A(j,15) = 2 * ay * az / ((az*az + ay*ay)*(az*az + ay*ay) * sqrt(1 - (ay*ay / ((az*az + ay*ay)*(az*az + ay*ay)))));
 
   j = 13;
   A(j, 1) = cos(a) * cos(b);
@@ -333,9 +333,9 @@ void SixDofEKF::makeBaseW() {
   W(j,1) = 1.0;
   W(j,2) = 0.0;
   W(j,3) = 0.0;
-  W(j,4) = 01.0;
-  W(j,5) = 01.0;
-  W(j,6) = 01.0;
+  W(j,4) = 0.0;
+  W(j,5) = 0.0;
+  W(j,6) = 0.0;
 
   j = 11;
   W(j,1) = 0.0;
@@ -350,8 +350,8 @@ void SixDofEKF::makeBaseW() {
   W(j,2) = 0.0;
   W(j,3) = 1.0;
   W(j,4) = 0.0;
-  W(j,5) = 01.0;
-  W(j,6) = 01.0;
+  W(j,5) = 0.0;
+  W(j,6) = 0.0;
 
   j = 13;
   W(j,1) = 0.0;
@@ -690,16 +690,16 @@ void SixDofEKF::makeH() {
   int az = x(15);
 
   j = 1;
- // H(j,13) = -x(13) / sqrt( (1 + x(13) * x(13)) * (x(13) * x(13) + x(14) * x(14) + x(15) * x(15))); // for x(13)
-  H(j,13) = -((1 / (az*az + ay*ay + ax*ax)) - (2*ax*ax / (  (az*az + ay*ay + ax*ax)*(az*az + ay*ay + ax*ax) )))/(sqrt(1 - (ax*ax/(  (az*az + ay*ay + ax*ax)*(az*az + ay*ay + ax*ax) ))));
+// // H(j,13) = -x(13) / sqrt( (1 + x(13) * x(13)) * (x(13) * x(13) + x(14) * x(14) + x(15) * x(15))); // for x(13)
+//  H(j,13) = -((1 / (az*az + ay*ay + ax*ax)) - (2*ax*ax / (  (az*az + ay*ay + ax*ax)*(az*az + ay*ay + ax*ax) )))/(sqrt(1 - (ax*ax/(  (az*az + ay*ay + ax*ax)*(az*az + ay*ay + ax*ax) ))));
   
-  H(j,14) = 2 * ax * ay / ((az*az + ay*ay + ax*ax)*(az*az + ay*ay + ax*ax) * sqrt(1 - (ax*ax / ((az*az + ay*ay + ax*ax)*(az*az + ay*ay + ax*ax)))));
+//  H(j,14) = 2 * ax * ay / ((az*az + ay*ay + ax*ax)*(az*az + ay*ay + ax*ax) * sqrt(1 - (ax*ax / ((az*az + ay*ay + ax*ax)*(az*az + ay*ay + ax*ax)))));
 
-  H(j,15) = 2 * ax * az / ((az*az + ay*ay + ax*ax)*(az*az + ay*ay + ax*ax) * sqrt(1 - (ax*ax / ((az*az + ay*ay + ax*ax)*(az*az + ay*ay + ax*ax)))));
+ // H(j,15) = 2 * ax * az / ((az*az + ay*ay + ax*ax)*(az*az + ay*ay + ax*ax) * sqrt(1 - (ax*ax / ((az*az + ay*ay + ax*ax)*(az*az + ay*ay + ax*ax)))));
 
   j = 3;
-  H(j,14) = (1 / (az*az + ay*ay) - (2 * ay * ay / ((az*az + ay*ay) * (az*az + ay*ay)))) / sqrt(1 - (ay * ay / ((az*az + ay*ay) * (az*az + ay*ay))));
-  H(j,15) = 2 * ay * az / ((az*az + ay*ay)*(az*az + ay*ay) * sqrt(1 - (ay*ay / ((az*az + ay*ay)*(az*az + ay*ay)))));
+//  H(j,14) = (1 / (az*az + ay*ay) - (2 * ay * ay / ((az*az + ay*ay) * (az*az + ay*ay)))) / sqrt(1 - (ay * ay / ((az*az + ay*ay) * (az*az + ay*ay))));
+ // H(j,15) = 2 * ay * az / ((az*az + ay*ay)*(az*az + ay*ay) * sqrt(1 - (ay*ay / ((az*az + ay*ay)*(az*az + ay*ay)))));
 
   //H(j,12)  = - 1 / sqrt( x(14) * x(14) + x(15) * x(15) + ( x(14) * x(14) * x(14) - x(15) * x(15) * x(14) ) / sqrt(x(14) * x(14) + x(15) * x(15)));
 
@@ -900,9 +900,9 @@ float roll = acos( x(7) / abs_pa);
   cout << " Heading (" << x(11) * 57.29578 << ", ^" << heading * 57.29578 << ")   pitch(" << x(10) * 57.29578 << ", " << pitch * 57.29578 << ")  roll(" << x(12) * 57.29578 << ", " << roll * 57.29578 << ")" << endl;
   #endif
 
-  x_(10) = /* x(10); //*/ pitch;
+  x_(10) = x(10); //*/ pitch;
   x_(11) = x(11);
-  x_(12) = /* x(12); //*/ roll;
+  x_(12) = x(12); //*/ roll;
   x_(13) = x(13);
   x_(14) = x(14);
   x_(15) = x(15);
@@ -923,9 +923,9 @@ void SixDofEKF::makeMeasure() {
   if (heading > 360) { heading = 0; }
   cout << count << " " << x(10) * 57.29578 << " " << x(11) * 57.29578  << " " << x(12) * 57.29578 << " " <<  pitch * 57.29578 << " " << heading * 57.29578 << " " << roll * 57.29578 << endl;
 
-  z(1) =  pitch; //*/ x(10);
+  z(1) = /* pitch; // */ x(10);
   z(2) = /* heading; */ x(11);
-  z(3) =   roll; //*/ x(12);
+  z(3) =  /* roll; // */ x(12);
   z(4) = x(13);
   z(5) = x(14);
   z(6) = x(15);
