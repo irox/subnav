@@ -100,7 +100,7 @@ SoSeparator* createSubmarine() {
 
   cylinder = new SoCylinder;
   cylinder->radius.setValue(0.5);
-  otherStuff->addChild(cylinder);
+//  otherStuff->addChild(cylinder);
   transform = new SoTransform;
   transform->scaleFactor.setValue(10, 0.5, 1.0); //0.0025, 40.0, 0.1250);
   otherStuff->addChild(transform);
@@ -191,7 +191,7 @@ SoSeparator* createSubmarine() {
     SoRotationXYZ *deckRot = new SoRotationXYZ;
     deckRot->axis.setValue(SoRotationXYZ::Z);
     deckRot->angle.setValue(-M_PI/2.0f);
-    root->addChild(deckRot);
+//    root->addChild(deckRot);
 
     deckRot = new SoRotationXYZ;
     deckRot->axis.setValue(SoRotationXYZ::Y);
@@ -199,8 +199,8 @@ SoSeparator* createSubmarine() {
     root->addChild(deckRot);
 
     transform = new SoTransform;
- //   transform->scaleFactor.setValue(1, 1, 1);
-    transform->translation.setValue(0, 0.75, 16.0);
+    transform->scaleFactor.setValue(0.8, 1, 1);
+    transform->translation.setValue(/*0.20*/0, 0.65, -2.350);
     root->addChild(transform);
  //
     SoSeparator *deck1 = SoDB::readAll(&inDeck);
@@ -209,3 +209,4 @@ SoSeparator* createSubmarine() {
   }
   return root;
 }
+
