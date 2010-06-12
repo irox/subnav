@@ -1,0 +1,128 @@
+#VRML V2.0 utf8
+
+# This file was authored with Blender (http://www.blender.org/)
+# Blender version 249
+# Blender file tailfinV.blend
+# Exported using VRML97 exporter v1.55 (2006/01/17)
+
+
+NavigationInfo {
+	headlight FALSE
+	visibilityLimit 100.0
+	type ["EXAMINE", "ANY"]
+	avatarSize [0.25, 1.75, 0.75]
+} 
+ 
+Background {
+	groundColor 0.0565629 0.2208154 0.4
+	skyColor 0.0565629 0.2208154 0.4
+}
+
+DEF OB_Cube_002 Transform {
+	translation 0.007920 1.238872 0.984795
+	rotation 1.000000 0.000000 0.000000 0.436471
+	scale 0.222739 0.555372 0.363962
+	children [
+		DEF ME_Cube_002 Group {
+			children [
+				Shape {
+					appearance Appearance {
+					}
+					geometry IndexedFaceSet {
+						solid TRUE
+						coord DEF coord_Cube_002 Coordinate {
+							point [
+1.0 -2.53657269478 -0.999999940395
+ 1.0 -2.53657269478 -0.713032364845
+ -2.95630335808 -0.886179804802 -0.713032543659
+ -2.95630288124 -0.886179804802 -1.00000035763
+ 1.51219129562 3.10567378998 -0.920650422573
+ 1.51219034195 3.10567378998 -0.818830490112
+ -0.487809479237 3.10567378998 -0.818831443787
+ -0.487809062004 3.10567378998 -0.920650959015
+ 							]
+						}
+						
+						coordIndex [
+0 1 2 3 -1, 
+4 7 6 5 -1, 
+0 4 5 1 -1, 
+1 5 6 2 -1, 
+2 6 7 3 -1, 
+4 0 3 7 -1, 
+						]
+					}
+				}
+			]
+		}
+	]
+}
+DEF OB_Cube Transform {
+	translation -0.046785 1.549723 -0.418766
+	rotation -1.000000 -0.000000 0.000000 0.454230
+	scale 0.222739 0.583438 0.475614
+	children [
+		DEF ME_Cube Group {
+			children [
+				Shape {
+					appearance Appearance {
+					}
+					geometry IndexedFaceSet {
+						solid TRUE
+						coord DEF coord_Cube Coordinate {
+							point [
+1.0 -2.53657269478 -0.999999940395
+ 1.0 -2.53657269478 -0.713032364845
+ -2.95630335808 -0.886179804802 -0.713032543659
+ -2.95630288124 -0.886179804802 -1.00000035763
+ 1.51219129562 3.10567378998 -0.920650422573
+ 1.51219034195 3.10567378998 -0.818830490112
+ -0.487809479237 3.10567378998 -0.818831443787
+ -0.487809062004 3.10567378998 -0.920650959015
+ 							]
+						}
+						
+						coordIndex [
+0 1 2 3 -1, 
+4 7 6 5 -1, 
+0 4 5 1 -1, 
+1 5 6 2 -1, 
+2 6 7 3 -1, 
+4 0 3 7 -1, 
+						]
+					}
+				}
+			]
+		}
+	]
+}
+DEF OB_Lamp Transform {
+	translation 4.076245 5.903862 -1.005454
+	rotation 0.205942 0.920698 -0.331517 1.926274
+	scale 1.000000 1.000000 1.000000
+	children [
+		DEF Lamp PointLight {
+			ambientIntensity 0.0
+			color 1.0 1.0 1.0
+			intensity 0.5714286
+			location 0.0 0.0 0.0
+			radius 29.9999828339
+		}
+		
+	]
+}
+DEF OB_Camera Transform {
+	translation 7.481132 5.343665 6.507640
+	rotation 0.772239 0.535848 -0.341341 1.347139
+	scale 1.000000 1.000000 1.000000
+	children [
+		DEF Camera Viewpoint {
+			description "Camera" 
+			position 0.0 0.0 0.0
+			orientation 1.0 0.0 0.0 -1.570796
+			fieldOfView 0.661
+		}
+		
+	]
+}
+
