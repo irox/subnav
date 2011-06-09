@@ -967,8 +967,8 @@ int main(int argc, char * argv[])
   }
   else
   {
-    camera->position.setValue(0.0f, 0.0f, 0.023945f);
-    camera->orientation.setValue(-0.452279f, 0.426091f, 0.537269f, -0.570291f);
+    camera->position.setValue(3.79 - z, y, x * 2);
+   // camera->orientation.setValue(-0.452279f, 0.426091f, 0.537269f, -0.570291f);
   }
 
   /* Run application. */
