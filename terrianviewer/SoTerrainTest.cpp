@@ -654,7 +654,10 @@ int main(int argc, char * argv[])
      // Calculate pixel colo(u)r...
      int red, green, blue;
 
-     if (zvalue > -150 && zvalue < 0) {
+     if (zvalue > -150 && zvalue < 1) {
+       if (zvalue >= -2.0) {
+         zvalue = -2.0;
+       }
        blue = int(zvalue / 1.33);
        green = 0;
        red = 0;
