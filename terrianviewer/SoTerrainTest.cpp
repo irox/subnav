@@ -678,12 +678,12 @@ int main(int argc, char * argv[])
  //    imageIndex = (row + column ) * 3;
   // imageIndex = imageRow + imageColumn;
 //   std::cout <<  imageIndex << " " << imageRow << " " << imageColumn<<std::endl;
-   if ( col_count < 5 ) {
+     if ( col_count < 5 ) {
        imageMap[imageIndex++] = 255;
        imageMap[imageIndex++] = 255;
        imageMap[imageIndex++] = 000;
 
-   } else if (imageIndex % imageWidth < 1) {
+     } else if (imageIndex % imageWidth < 1) {
     /*   imageMap[imageIndex++] = 255;
        imageMap[imageIndex++] = 255;
        imageMap[imageIndex++] = 255;
@@ -696,21 +696,12 @@ int main(int argc, char * argv[])
        imageMap[imageIndex++] = 255;
        imageMap[imageIndex++] = 255;
        imageMap[imageIndex++] = 255;
-     } else if (I % (mapwidth )  < imageWidth + 1)  {
+     } else {
        imageMap[imageIndex++] = red;
        imageMap[imageIndex++ /*+ 1*/] = green;
        imageMap[imageIndex++ /* + 2*/] = blue;
-     } else {
-       imageMap[imageIndex++] = 0;
-       imageMap[imageIndex++] = 0;
-       imageMap[imageIndex++] = 255;
      }
- 
-  //   imageIndex++;
-     //  std::cout << imageIndex << " " << imageColumn << " " << imageRow << std::endl;
-        
-
-      points[pointTerrainCount] = SbVec3f( 3.79-z, y, -x );
+      points[pointTerrainCount] = SbVec3f( 3.79087-z, y, -x );
       texture_points[pointCount] = SbVec2f((1-y/3.79087 ), 1-z/3.77219  /*1 - x, 1 - (y - firsty)*/);
       pointCount++;
     }
