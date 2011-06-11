@@ -658,7 +658,7 @@ int main(int argc, char * argv[])
        if (zvalue >= -2.0) {
          zvalue = -2.0;
        }
-       blue = int(zvalue / 1.33);
+       blue = int(zvalue * 1.7);
        green = 0;
        red = 0;
      } else if (zvalue < -300 && zvalue > -600) {
