@@ -490,36 +490,15 @@ int main(int argc, char * argv[])
   int mapheight = 0;
   int height = 0;
   int components = 0;
- // unsigned char * heightmap = simage_read_image(heightmap_name, &width,
- //   &height, &components);
 
   FILE *hmFile = fopen (heightmap_name , "r");
 
-//  fscanf(hmFile, "NCOLS  %d\n", &mapwidth);
-//  fscanf(hmFile, "NROWS  %d\n", &mapheight);
   
-  int width = 1024 * 4 + 1; //4097; // + 512; //2049; //1025;
+  int width = 1024 * 4 + 1; //4097;
   height = width;
-//  width--; height--;
   float dummyf;
-  // Scan the next few lines but toss the data for now.
-//  fscanf(hmFile, "XLLCENTER %f\n", &dummyf);
- // fscanf(hmFile, "YLLCENTER  %f\n", &dummyf);
-//  fscanf(hmFile, "CELLSIZE %f\n", &dummyf);
-//  fscanf(hmFile, "NODATA_VALUE  %f\n", &dummyf);
-//  fscanf(hmFile, "%*[ \n\t]%f", &dummyf);
   float dummyf2;
-//  fscanf(hmFile, "%*[ \n\t]%f", &dummyf2);
 
-//  std::cout << "Width = " << width << " , height = " << height << " first val = " << dummyf << "second val = " << dummyf2 << std::endl;
-//  exit(0);
-
-//  if (heightmap == NULL)
-//  {
-//    std::cout << "Error loading height map " << heightmap_name << "!"
-//      << std::endl;
-//    exit(1);
-//  }
 
   PR_INIT_PROFILER();
 
@@ -562,7 +541,6 @@ int main(int argc, char * argv[])
   style_callback->addEventCallback(SoKeyboardEvent::getClassTypeId(),
     styleCallback, style);
   light->direction.setValue(-0.5f, 0.5f, -1.0f);
-//  texture->filename.setValue(texture_name);
   coords->point.setNum(width * height);
   int imageWidth = 4096;
   int imageHeight = 4096;
@@ -575,11 +553,9 @@ int main(int argc, char * argv[])
   SbVec2f * texture_points = texture_coords->point.startEditing();
   SbVec3f * normal_points = normals->vector.startEditing();
   SoSFImage * image = new SoSFImage();
- // SbVec2s *imageSize= new SbVec2s(4096, 2048 /*4095*/ /*width - 2, height -1*/);
   SbVec2s imageSize(imageWidth, imageHeight);
- // float zdat[4801 * 7201];
   unsigned char *imageMap = new unsigned char[4098 * 4097 * 3];
-  int pointCount = 0; //width * height - 1;
+  int pointCount = 0;
   int pointTerrainCount = 0;
   float x,y;
   float firsty = 0;
@@ -620,35 +596,20 @@ int main(int argc, char * argv[])
       row_count++;
  //std::cout <<  pointTerrainCount << " " << zvalue << " "  << (loc.get_x() - first.get_x()) << " " << (loc.get_y() - first.get_y()) << " " << (loc.get_z() - first.get_z()) << std::endl;
     } else {
-      //col_count++;
       col_count--;
     }
     
 //      std::cout <<  pointTerrainCount << " col = " << col_count << "  row = " << row_count << std::endl;
 
-    if (( col_count >= 0 /*col_count < width */) && ( row_count < width)) {
+    if (( col_count >= 0 ) && ( row_count < width)) {
       loc.set_LLA(lat - first_lat, lng - first_lng, zvalue, WGS84);
 
       x = (first.get_x() - loc.get_x()) / 100000;
       y = loc.get_y() / 100000;
-      z = loc.get_z() / 100000   ;
-/*      x = (loc.get_x() - first.get_x()) / 100000;
-      y = (loc.get_y() - first.get_y()) / 100000;
-      z = (loc.get_z() - first.get_z()) / 100000;
-*/
+      z = loc.get_z() / 100000;
 
-/*      x = (first.get_x() - loc.get_x()) / 100000;
-      
-      y = (first.get_y() - loc.get_y()) / 100000;
-      z = (first.get_z() - loc.get_z()) / 100000;
-*/
-//      std::cout <<  pointTerrainCount << " x = " << x << "  y = " << y << "   z = " << z << std::endl;
-/*      float zscale = 0.00002f;
-      int column = (width - I % mapwidth - 1);
-      int row = (I / mapwidth - (mapheight - height)) * width;
-      int imageColumn = col_count; 
-      int imageRow = (I / mapwidth - (mapheight - height)) * imageWidth;*/
       pointTerrainCount = col_count + row_count * width;
+//      std::cout <<  pointTerrainCount << " x = " << x << "  y = " << y << "   z = " << z << std::endl;
     //  std::cout <<  pointTerrainCount << " col: " << column << " row: " << row << " " << I / mapwidth << " " << (mapheight - height -1) << " " << width - I % mapwidth << " " << width - I % mapwidth << std::endl;
      
      // Calculate pixel colo(u)r...
@@ -674,20 +635,14 @@ int main(int argc, char * argv[])
        green = zvalue > 0 ? int(zvalue) % 255 : int(zvalue) %  250;
        red = zvalue > 0 ? 50 + zvalue / 15 : 0; 
      }
-    // imageIndex = (row * width + column) * 3;
- //    imageIndex = (row + column ) * 3;
-  // imageIndex = imageRow + imageColumn;
-//   std::cout <<  imageIndex << " " << imageRow << " " << imageColumn<<std::endl;
+
      if ( col_count < 5 ) {
        imageMap[imageIndex++] = 255;
        imageMap[imageIndex++] = 255;
        imageMap[imageIndex++] = 000;
 
      } else if (imageIndex % imageWidth < 1) {
-    /*   imageMap[imageIndex++] = 255;
-       imageMap[imageIndex++] = 255;
-       imageMap[imageIndex++] = 255;
-*/
+       // Skip this.
      } else if (imageIndex < 6 * imageWidth) {
        imageMap[imageIndex++] = 255;
        imageMap[imageIndex++] = 0;
