@@ -544,7 +544,7 @@ int main(int argc, char * argv[])
   coords->point.setNum(width * height);
   int imageWidth = width; //4096;
   int imageHeight = height; //4096;
-  texture_coords->point.setNum((imageWidth + 1 ) * (imageHeight + 1));
+  texture_coords->point.setNum((imageWidth /*+ 1*/ ) * (imageHeight /*+ 1*/));
   normals->vector.setNum(width * height);
   normal_binding->value.setValue(SoNormalBinding::PER_VERTEX_INDEXED);
 
@@ -615,7 +615,7 @@ int main(int argc, char * argv[])
      // Calculate pixel colo(u)r...
      int red, green, blue;
 
-     if (zvalue > -150 && zvalue < 1) {
+     if (zvalue > -150 && zvalue <= 0) {
        if (zvalue >= -2.0) {
          zvalue = -2.0;
        }
@@ -636,8 +636,7 @@ int main(int argc, char * argv[])
        red = zvalue > 0 ? 50 + zvalue / 15 : 0; 
      }
 
-     if (imageIndex % imageWidth < 1) {
-       // Skip this?.
+     if (imageIndex % (imageWidth * 3) < 1) {
        imageMap[imageIndex++] = 0;
        imageMap[imageIndex++] = 0;
        imageMap[imageIndex++] = 255;
@@ -652,19 +651,18 @@ int main(int argc, char * argv[])
        imageMap[imageIndex++] = 255;
      } else {
        imageMap[imageIndex++] = red;
-       imageMap[imageIndex++ /*+ 1*/] = green;
-       imageMap[imageIndex++ /* + 2*/] = blue;
+       imageMap[imageIndex++] = green;
+       imageMap[imageIndex++] = blue;
      }
       points[pointTerrainCount] = SbVec3f( 3.79087-z, y, -x );
-      texture_points[pointCount] = SbVec2f((1-y/3.79087 ), 1-z/3.77219);
+      texture_points[pointCount] = SbVec2f(col_count * 1.0/ width * 1.0,
+                                           row_count * 1.0 / height * 1.0);
       pointCount++;
     }
   }
   
-  texture->image.setValue(imageSize, 3, imageMap, SoSFImage::COPY); //SoSFImage::CopyPolicy::COPY); //NULL);
+  texture->image.setValue(imageSize, 3, imageMap, SoSFImage::COPY);
   std::cout << I << "/" << pointCount << " x y z = (" << x << ", " << y << ", " << z << ")" << std::endl;
-// texture->image = image;
- // width = 1025;
 
   /* Compute inner normals. */
   for (int Y = 1; Y < (height - 1); ++Y)
