@@ -542,8 +542,8 @@ int main(int argc, char * argv[])
     styleCallback, style);
   light->direction.setValue(-0.5f, 0.5f, -1.0f);
   coords->point.setNum(width * height);
-  int imageWidth = 4096;
-  int imageHeight = 4096;
+  int imageWidth = width; //4096;
+  int imageHeight = height; //4096;
   texture_coords->point.setNum((imageWidth + 1 ) * (imageHeight + 1));
   normals->vector.setNum(width * height);
   normal_binding->value.setValue(SoNormalBinding::PER_VERTEX_INDEXED);
@@ -554,7 +554,7 @@ int main(int argc, char * argv[])
   SbVec3f * normal_points = normals->vector.startEditing();
   SoSFImage * image = new SoSFImage();
   SbVec2s imageSize(imageWidth, imageHeight);
-  unsigned char *imageMap = new unsigned char[4098 * 4097 * 3];
+  unsigned char *imageMap = new unsigned char[imageWidth * imageHeight * 3];
   int pointCount = 0;
   int pointTerrainCount = 0;
   float x,y;
@@ -636,13 +636,12 @@ int main(int argc, char * argv[])
        red = zvalue > 0 ? 50 + zvalue / 15 : 0; 
      }
 
-     if ( col_count < 5 ) {
+     if (imageIndex % imageWidth < 1) {
+       // Skip this?.
+       imageMap[imageIndex++] = 0;
+       imageMap[imageIndex++] = 0;
        imageMap[imageIndex++] = 255;
-       imageMap[imageIndex++] = 255;
-       imageMap[imageIndex++] = 000;
 
-     } else if (imageIndex % imageWidth < 1) {
-       // Skip this.
      } else if (imageIndex < 6 * imageWidth) {
        imageMap[imageIndex++] = 255;
        imageMap[imageIndex++] = 0;
@@ -657,7 +656,7 @@ int main(int argc, char * argv[])
        imageMap[imageIndex++ /* + 2*/] = blue;
      }
       points[pointTerrainCount] = SbVec3f( 3.79087-z, y, -x );
-      texture_points[pointCount] = SbVec2f((1-y/3.79087 ), 1-z/3.77219  /*1 - x, 1 - (y - firsty)*/);
+      texture_points[pointCount] = SbVec2f((1-y/3.79087 ), 1-z/3.77219);
       pointCount++;
     }
   }
