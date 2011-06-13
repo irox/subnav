@@ -542,9 +542,9 @@ int main(int argc, char * argv[])
     styleCallback, style);
   light->direction.setValue(-0.5f, 0.5f, -1.0f);
   coords->point.setNum(width * height);
-  int imageWidth = width; //4096;
-  int imageHeight = height; //4096;
-  texture_coords->point.setNum((imageWidth /*+ 1*/ ) * (imageHeight /*+ 1*/));
+  int imageWidth = width;
+  int imageHeight = height;
+  texture_coords->point.setNum(imageWidth * imageHeight );
   normals->vector.setNum(width * height);
   normal_binding->value.setValue(SoNormalBinding::PER_VERTEX_INDEXED);
 
@@ -831,7 +831,7 @@ int main(int argc, char * argv[])
 	    case ID_ALG_ROAM:
 	    {
 	      SoSimpleROAMTerrain * terrain = new SoSimpleROAMTerrain();
-	      terrain->mapSize.setValue( /*4096 * 2 + 1 );/ */width);
+	      terrain->mapSize.setValue(width);
 	      terrain->pixelError.setValue(pixel_error);
 	      terrain->triangleCount.setValue(triangle_count);
 	      terrain->frustrumCulling.setValue(is_frustrum_culling);
@@ -914,7 +914,6 @@ int main(int argc, char * argv[])
   else
   {
     camera->position.setValue(3.79 - z, y, x * 2);
-   // camera->orientation.setValue(-0.452279f, 0.426091f, 0.537269f, -0.570291f);
   }
 
   /* Run application. */
