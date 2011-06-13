@@ -493,9 +493,13 @@ int main(int argc, char * argv[])
 
   FILE *hmFile = fopen (heightmap_name , "r");
 
-  
-  int width = 1024 * 4 + 1; //4097;
+  // SoTerrain only seems to handle size which
+  // are multiples of 1024.  The +1 maybe due
+  // to some sloppiness some later in the code
+  // (i.e. "<" vs "<=" or something).
+  int width = 1024 * 4 + 1;
   height = width;
+
   float dummyf;
   float dummyf2;
 
