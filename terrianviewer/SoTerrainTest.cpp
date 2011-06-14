@@ -47,6 +47,7 @@
 #include <Inventor/sensors/SoTimerSensor.h>
 #include <Inventor/nodes/SoResetTransform.h>
 #include <Inventor/nodes/SoSphere.h>
+#include <Inventor/nodes/SoText2.h>
 
 #include <Inventor/Qt/SoQt.h>
 #include <Inventor/Qt/viewers/SoQtExaminerViewer.h>
@@ -104,7 +105,26 @@ void markerCallback(void *userData,  SoEventCallback * eventCB) {
   }
 
   SoTransform *pinMarkerTrans = reinterpret_cast<SoTransform *> (userData);
-  pinMarkerTrans->translation.setValue(3.79-marker_lat, marker_long, 0);
+  pinMarkerTrans->translation.setValue(3.79-marker_lat, marker_long, -0.4);
+}
+
+void markerTextCallback(void *userData,  SoEventCallback * eventCB) {
+  const SoKeyboardEvent * event =
+      reinterpret_cast<const SoKeyboardEvent *>(eventCB->getEvent());
+
+  if (SO_KEY_PRESS_EVENT(event, NUMBER_1)) {
+  } else if (SO_KEY_PRESS_EVENT(event, NUMBER_2)) {
+  } else if (SO_KEY_PRESS_EVENT(event, NUMBER_3)) {
+  } else if (SO_KEY_PRESS_EVENT(event, NUMBER_4)) {
+  } else {
+    return;
+  }
+
+  SoText2 *pinMarkerText = reinterpret_cast<SoText2 *> (userData);
+  SbString *str = pinMarkerText->string.startEditing();
+
+  str[1].sprintf("%3.3f, %3.3f", marker_long, marker_lat);
+  pinMarkerText->string.finishEditing();
 }
 
 /* Change terrain properties by key press callback. */
@@ -811,29 +831,43 @@ int main(int argc, char * argv[])
   SoTransform *transform = new SoTransform;
           marker_lat = z/2;
           marker_long = y/2;
-	  transform->translation.setValue(3.79-marker_lat, marker_long, 0);
+	  transform->translation.setValue(3.79-marker_lat, marker_long, -0.4);
 
   SoResetTransform *resetForTerrain = new SoResetTransform();
 
   SoCube *marker = new SoCube();
   marker->width  = 1.0  / 500;
   marker->height = 1.0f / 500;
-  marker->depth  = 1.0f / 10;
+  marker->depth  = 1.0f / 1;
   SoTransform *pinHeadTrans = new SoTransform();
-  pinHeadTrans->translation.setValue(0,0,0.05);
+  pinHeadTrans->translation.setValue(0,0,0.5);
 
   SoSphere *sphere = new SoSphere();
   sphere->radius = 0.02f;
+
+  SoTransform *pinTextTrans = new SoTransform();
+  pinTextTrans->translation.setValue(0,0,0.05);
+
+  SoText2 *markerLabel = new SoText2();
+  SbString markerTexts[2] = {"Name", "x, y"};
+  markerLabel->string.setValues(0, 2, markerTexts);
 
   markerSep->addChild(transform);
   markerSep->addChild(marker);
   markerSep->addChild(pinHeadTrans);
   markerSep->addChild(sphere);
+  markerSep->addChild(pinTextTrans);
+  markerSep->addChild(markerLabel);
+
   SoEventCallback * marker_callback = new SoEventCallback();
    marker_callback->addEventCallback(
        SoKeyboardEvent::getClassTypeId(),
        markerCallback,
        transform);
+   marker_callback->addEventCallback(
+       SoKeyboardEvent::getClassTypeId(),
+       markerTextCallback,
+       markerLabel);
  
   /* Connect scene graph nodes. */
   root->ref();
