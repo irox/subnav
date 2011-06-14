@@ -649,7 +649,7 @@ int main(int argc, char * argv[])
        imageMap[imageIndex++] = 255;
        imageMap[imageIndex++] = 0;
        imageMap[imageIndex++] = 0;
-     } else if (imageIndex % imageWidth * 3 < 6) {
+     } else if (imageIndex % (imageWidth * 3) < 6) {
        imageMap[imageIndex++] = 255;
        imageMap[imageIndex++] = 255;
        imageMap[imageIndex++] = 255;
@@ -788,7 +788,6 @@ int main(int argc, char * argv[])
   coords->point.finishEditing();
   texture_coords->point.finishEditing();
   normals->vector.finishEditing();
-//  simage_free_image(heightmap);
 
   // Create slightly opaque blue cube to be the sea/water.
   SoMaterial *material = new SoMaterial;
