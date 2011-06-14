@@ -838,64 +838,64 @@ int main(int argc, char * argv[])
   /* Connect scene graph nodes. */
   root->ref();
   root->addChild(style);
-	  root->addChild(separator);
-	  separator->addChild(terrain_callback);
-	  separator->addChild(style_callback);
-          separator->addChild(marker_callback);
-	  separator->addChild(camera);
-	  separator->addChild(light);
-          separator->addChild(terrainSeparator);
-          terrainSeparator->addChild(resetForTerrain);
-	  terrainSeparator->addChild(texture);
-	  terrainSeparator->addChild(texture_coords);
-	  terrainSeparator->addChild(coords);
-	  terrainSeparator->addChild(normals);
-	  terrainSeparator->addChild(normal_binding);
-          separator->addChild(markerSep);
+  root->addChild(separator);
+  separator->addChild(terrain_callback);
+  separator->addChild(style_callback);
+  separator->addChild(marker_callback);
+  separator->addChild(camera);
+  separator->addChild(light);
+  separator->addChild(terrainSeparator);
+  terrainSeparator->addChild(resetForTerrain);
+  terrainSeparator->addChild(texture);
+  terrainSeparator->addChild(texture_coords);
+  terrainSeparator->addChild(coords);
+  terrainSeparator->addChild(normals);
+  terrainSeparator->addChild(normal_binding);
+  separator->addChild(markerSep);
 
-	  switch (algorithm)
-	  {
-	    case ID_ALG_ROAM:
-	    {
-	      SoSimpleROAMTerrain * terrain = new SoSimpleROAMTerrain();
-	      terrain->mapSize.setValue(width);
-	      terrain->pixelError.setValue(pixel_error);
-	      terrain->triangleCount.setValue(triangle_count);
-	      terrain->frustrumCulling.setValue(is_frustrum_culling);
-	      terrain_callback->addEventCallback(SoKeyboardEvent::getClassTypeId(),
-		terrainCallback, terrain);
-	      terrainSeparator->addChild(terrain);
-	    }
-	    break;
-	    case ID_ALG_GEO_MIPMAP:
-	    {
-	      SoSimpleGeoMipmapTerrain * terrain = new SoSimpleGeoMipmapTerrain();
-	      terrain->mapSize.setValue(width);
-	      terrain->tileSize.setValue(tile_size);
-	      terrain->pixelError.setValue(pixel_error);
-	      terrain_callback->addEventCallback(SoKeyboardEvent::getClassTypeId(),
-		terrainCallback, terrain);
-	      terrainSeparator->addChild(terrain);
-	    }
-	    break;
-	    case ID_ALG_CHUNKED_LOD:
-	    {
-	      SoSimpleChunkedLoDTerrain * terrain = new SoSimpleChunkedLoDTerrain();
-	      terrain->mapSize.setValue(width);
-	      terrain->tileSize.setValue(tile_size);
-	      terrain->pixelError.setValue(pixel_error);
-	      terrain_callback->addEventCallback(SoKeyboardEvent::getClassTypeId(),
-		terrainCallback, terrain);
-	      terrainSeparator->addChild(terrain);
-	    }
-	    break;
-	    case ID_ALG_BRUAL_FORCE:
-	    {
-	      SoIndexedTriangleStripSet * terrain = new SoIndexedTriangleStripSet();
+  switch (algorithm)
+  {
+    case ID_ALG_ROAM:
+    {
+      SoSimpleROAMTerrain * terrain = new SoSimpleROAMTerrain();
+      terrain->mapSize.setValue(width);
+      terrain->pixelError.setValue(pixel_error);
+      terrain->triangleCount.setValue(triangle_count);
+      terrain->frustrumCulling.setValue(is_frustrum_culling);
+      terrain_callback->addEventCallback(SoKeyboardEvent::getClassTypeId(),
+	terrainCallback, terrain);
+      terrainSeparator->addChild(terrain);
+    }
+    break;
+    case ID_ALG_GEO_MIPMAP:
+    {
+      SoSimpleGeoMipmapTerrain * terrain = new SoSimpleGeoMipmapTerrain();
+      terrain->mapSize.setValue(width);
+      terrain->tileSize.setValue(tile_size);
+      terrain->pixelError.setValue(pixel_error);
+      terrain_callback->addEventCallback(SoKeyboardEvent::getClassTypeId(),
+	terrainCallback, terrain);
+      terrainSeparator->addChild(terrain);
+    }
+    break;
+    case ID_ALG_CHUNKED_LOD:
+    {
+      SoSimpleChunkedLoDTerrain * terrain = new SoSimpleChunkedLoDTerrain();
+      terrain->mapSize.setValue(width);
+      terrain->tileSize.setValue(tile_size);
+      terrain->pixelError.setValue(pixel_error);
+      terrain_callback->addEventCallback(SoKeyboardEvent::getClassTypeId(),
+	terrainCallback, terrain);
+      terrainSeparator->addChild(terrain);
+    }
+    break;
+    case ID_ALG_BRUAL_FORCE:
+    {
+      SoIndexedTriangleStripSet * terrain = new SoIndexedTriangleStripSet();
 
-	      /* Create terrain heightmap vertices indices. */
-	      terrain->coordIndex.setNum((height - 1) * ((2 * width) + 1));
-	      int * indices = terrain->coordIndex.startEditing();
+      /* Create terrain heightmap vertices indices. */
+      terrain->coordIndex.setNum((height - 1) * ((2 * width) + 1));
+      int * indices = terrain->coordIndex.startEditing();
 
       int I = 0;
       for (int Y = 0; Y < (height - 1); Y++)
