@@ -84,8 +84,26 @@ int algorithm = ID_ALG_ROAM;
 float animation_time = 30.0f;
 float frame_time = 0.04f;
 SbBool is_synchronize = FALSE;
+
+// Pin marker long and lat.
 float marker_long = -124.0;
 float marker_lat  = 40.0;
+
+// Map reference long and lat
+// (The first point drawn).
+float ref_long = 0.0;
+float ref_lat = 0.0;
+
+/* Transform to a given lat and long. */
+void placeMarker(SoTransform *transform, float lat, float lng) {
+  Position loc;
+  loc.set_LLA(lat - ref_lat, lng - ref_long, 0.0, WGS84);
+
+  float y = loc.get_y() / 100000;
+  float z = loc.get_z() / 100000;
+
+  transform->translation.setValue(3.79-z, y, -0.4);
+}
 
 /* Callback for moving the marker pin around. */
 void markerCallback(void *userData,  SoEventCallback * eventCB) {
@@ -103,9 +121,16 @@ void markerCallback(void *userData,  SoEventCallback * eventCB) {
   } else {
     return;
   }
-
+  
   SoTransform *pinMarkerTrans = reinterpret_cast<SoTransform *> (userData);
-  pinMarkerTrans->translation.setValue(3.79-marker_lat, marker_long, -0.4);
+  placeMarker(pinMarkerTrans, marker_lat, marker_long);
+}
+
+void updateMarkerText(SoText2 *pinMarkerText, float lat, float lng) {
+  SbString *str = pinMarkerText->string.startEditing();
+
+  str[1].sprintf("%3.3f, %3.3f", marker_long, marker_lat);
+  pinMarkerText->string.finishEditing();
 }
 
 void markerTextCallback(void *userData,  SoEventCallback * eventCB) {
@@ -121,10 +146,7 @@ void markerTextCallback(void *userData,  SoEventCallback * eventCB) {
   }
 
   SoText2 *pinMarkerText = reinterpret_cast<SoText2 *> (userData);
-  SbString *str = pinMarkerText->string.startEditing();
-
-  str[1].sprintf("%3.3f, %3.3f", marker_long, marker_lat);
-  pinMarkerText->string.finishEditing();
+  updateMarkerText(pinMarkerText, marker_lat, marker_long);
 }
 
 /* Change terrain properties by key press callback. */
@@ -613,8 +635,8 @@ int main(int argc, char * argv[])
     if (current_lat == 999) {
       // Set first position (everything is should drawn relative to this point.
       first.set_LLA(0.0, 0.0, 0.0, WGS84);
-      first_lat = lat;
-      first_lng = lng;
+      ref_lat = first_lat = lat;
+      ref_long = first_lng = lng;
       previous_loc = first;
     }
 
@@ -829,9 +851,9 @@ int main(int argc, char * argv[])
   SoTransparencyType *transType = new SoTransparencyType();
   transType->value = SoTransparencyType::BLEND;
   SoTransform *transform = new SoTransform;
-          marker_lat = z/2;
-          marker_long = y/2;
-	  transform->translation.setValue(3.79-marker_lat, marker_long, -0.4);
+  marker_lat = 37.753;
+  marker_long = -122.440;
+  placeMarker(transform, marker_lat, marker_long);
 
   SoResetTransform *resetForTerrain = new SoResetTransform();
 
@@ -849,8 +871,9 @@ int main(int argc, char * argv[])
   pinTextTrans->translation.setValue(0,0,0.05);
 
   SoText2 *markerLabel = new SoText2();
-  SbString markerTexts[2] = {"Name", "x, y"};
+  SbString markerTexts[2] = {"Marker1", "x, y"};
   markerLabel->string.setValues(0, 2, markerTexts);
+  updateMarkerText(markerLabel, marker_lat, marker_long);
 
   markerSep->addChild(transform);
   markerSep->addChild(marker);
