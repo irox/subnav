@@ -45,6 +45,8 @@
 #include <Inventor/nodes/SoTransform.h>
 #include <Inventor/events/SoKeyboardEvent.h>
 #include <Inventor/sensors/SoTimerSensor.h>
+#include <Inventor/nodes/SoResetTransform.h>
+#include <Inventor/nodes/SoSphere.h>
 
 #include <Inventor/Qt/SoQt.h>
 #include <Inventor/Qt/viewers/SoQtExaminerViewer.h>
@@ -524,8 +526,6 @@ int main(int argc, char * argv[])
   SoSimpleChunkedLoDTerrain::initClass();
   SoProfileGroup::initClass();
 
-  // Create slightly opaque blue cube to be the sea/water.
- 
   /* Create scene graph. */
   SoProfileGroup * root = new SoProfileGroup();
   SoEventCallback * style_callback = new SoEventCallback();
@@ -533,8 +533,12 @@ int main(int argc, char * argv[])
   SoDrawStyle * style = new SoDrawStyle();
   SoDirectionalLight * light = new SoDirectionalLight();
   SoSeparator * separator = new SoSeparator();
-  SoSeparator * waterSep = new SoSeparator();
-
+  SoSeparator * markerSep = new SoSeparator();
+  SoSeparator * terrainSeparator = new SoSeparator();
+  // not sure turning off Culling here is having any effect.
+  terrainSeparator->pickCulling.setValue(SoSeparator::OFF);
+  terrainSeparator->renderCulling.setValue(SoSeparator::OFF);
+ 
   SoEventCallback * terrain_callback = new SoEventCallback();
   SoTexture2 * texture = new SoTexture2();
   SoTextureCoordinate2 * texture_coords = new SoTextureCoordinate2();
@@ -580,7 +584,7 @@ int main(int argc, char * argv[])
  
   int row_count = -1;
   int col_count = 0;
-  Position first, loc;
+  Position first, loc, previous_loc;
 	
   for (I = 0; I < 4801 * 4801; I++)
   {
@@ -591,6 +595,7 @@ int main(int argc, char * argv[])
       first.set_LLA(0.0, 0.0, 0.0, WGS84);
       first_lat = lat;
       first_lng = lng;
+      previous_loc = first;
     }
 
     if (current_lat != lat) {
@@ -662,6 +667,7 @@ int main(int argc, char * argv[])
       texture_points[pointCount] = SbVec2f(col_count * 1.0/ width * 1.0,
                                            row_count * 1.0 / height * 1.0);
       pointCount++;
+      previous_loc = loc;
     }
   }
   
@@ -789,30 +795,39 @@ int main(int argc, char * argv[])
   texture_coords->point.finishEditing();
   normals->vector.finishEditing();
 
-  // Create slightly opaque blue cube to be the sea/water.
+  // Create the push pin marker.
   SoMaterial *material = new SoMaterial;
   material->ambientColor.setValue(0.0, 0.0, 0.8);
-  material->diffuseColor.setValue(0.0, 0.0, 0.8);
-  material->transparency.setValue(0.7);
+  material->diffuseColor.setValue(0.8, 0.8, 0.8);
+  material->transparency.setValue(0.0);
   material->shininess.setValue(0.6);
   material->emissiveColor.setValue(0.000000, 0.000000, 0.000000);
 
-  waterSep->addChild(new SoTexture2());
+  markerSep->addChild(new SoTexture2());
 
-  waterSep->addChild(material);
+  markerSep->addChild(material);
   SoTransparencyType *transType = new SoTransparencyType();
   transType->value = SoTransparencyType::BLEND;
-  waterSep->addChild(transType);
   SoTransform *transform = new SoTransform;
-  transform->translation.setValue(0.5, 01.25, -0.5);
-  waterSep->addChild(transform);
+  transform->translation.setValue(3.79-z/2, y/2, 0 );
 
-  SoCube *water = new SoCube();
-  water->width  = 1.0;
-  water->height = 1.0f;
-  water->depth  = 1.0f;
- 
-  waterSep->addChild(water);
+  SoResetTransform *resetForMarker = new SoResetTransform();
+  SoResetTransform *resetForTerrain = new SoResetTransform();
+
+  SoCube *marker = new SoCube();
+  marker->width  = 1.0  / 500;
+  marker->height = 1.0f / 500;
+  marker->depth  = 1.0f / 10;
+  SoTransform *pinHeadTrans = new SoTransform();
+  pinHeadTrans->translation.setValue(0,0,0.05);
+
+  SoSphere *sphere = new SoSphere();
+  sphere->radius = 0.02f;
+
+  markerSep->addChild(transform);
+  markerSep->addChild(marker);
+  markerSep->addChild(pinHeadTrans);
+  markerSep->addChild(sphere);
  
   /* Connect scene graph nodes. */
   root->ref();
@@ -822,12 +837,14 @@ int main(int argc, char * argv[])
 	  separator->addChild(style_callback);
 	  separator->addChild(camera);
 	  separator->addChild(light);
-  //        separator->addChild(waterSep);
-	  separator->addChild(texture);
-	  separator->addChild(texture_coords);
-	  separator->addChild(coords);
-	  separator->addChild(normals);
-	  separator->addChild(normal_binding);
+          separator->addChild(terrainSeparator);
+          terrainSeparator->addChild(resetForTerrain);
+	  terrainSeparator->addChild(texture);
+	  terrainSeparator->addChild(texture_coords);
+	  terrainSeparator->addChild(coords);
+	  terrainSeparator->addChild(normals);
+	  terrainSeparator->addChild(normal_binding);
+          separator->addChild(markerSep);
 
 	  switch (algorithm)
 	  {
@@ -840,7 +857,7 @@ int main(int argc, char * argv[])
 	      terrain->frustrumCulling.setValue(is_frustrum_culling);
 	      terrain_callback->addEventCallback(SoKeyboardEvent::getClassTypeId(),
 		terrainCallback, terrain);
-	      separator->addChild(terrain);
+	      terrainSeparator->addChild(terrain);
 	    }
 	    break;
 	    case ID_ALG_GEO_MIPMAP:
@@ -851,7 +868,7 @@ int main(int argc, char * argv[])
 	      terrain->pixelError.setValue(pixel_error);
 	      terrain_callback->addEventCallback(SoKeyboardEvent::getClassTypeId(),
 		terrainCallback, terrain);
-	      separator->addChild(terrain);
+	      terrainSeparator->addChild(terrain);
 	    }
 	    break;
 	    case ID_ALG_CHUNKED_LOD:
@@ -862,7 +879,7 @@ int main(int argc, char * argv[])
 	      terrain->pixelError.setValue(pixel_error);
 	      terrain_callback->addEventCallback(SoKeyboardEvent::getClassTypeId(),
 		terrainCallback, terrain);
-	      separator->addChild(terrain);
+	      terrainSeparator->addChild(terrain);
 	    }
 	    break;
 	    case ID_ALG_BRUAL_FORCE:
@@ -884,11 +901,11 @@ int main(int argc, char * argv[])
         indices[I++] = -1;
       }
       terrain->coordIndex.finishEditing();
-      separator->addChild(terrain);
+      terrainSeparator->addChild(terrain);
     }
     break;
   }
-  separator->addChild(waterSep);
+
   /* Setup camera and render area. */
   SoQtFreeViewer * render_area = new SoQtFreeViewer(window);
   SoSceneManager * scene_manager = new SoSceneManager();
@@ -924,7 +941,7 @@ int main(int argc, char * argv[])
   SoQt::mainLoop();
   SoQt::done();
 
-  PR_PRINT_RESULTS(profile_name);
+//  PR_PRINT_RESULTS(profile_name);
 
   /* Free memory. */
   root->unref();
