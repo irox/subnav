@@ -357,8 +357,6 @@ int main(int argc, char * argv[])
 {
   /* Default values of program arguments. */
   char * heightmap_name = NULL;
-  char * texture_name = NULL;
-  char * profile_name = "profile.txt";
   int triangle_count = 1000;
   int tile_size = 33;
   int pixel_error = 6;
@@ -376,18 +374,6 @@ int main(int argc, char * argv[])
       case 'h':
       {
         heightmap_name = optarg;
-      }
-      break;
-      /* Texture. */
-      case 't':
-      {
-        texture_name = optarg;
-      }
-      break;
-      /* File for output of profiler. */
-      case 'p':
-      {
-        profile_name = optarg;
       }
       break;
       /* Algorithm. */
@@ -488,10 +474,7 @@ int main(int argc, char * argv[])
   }
 
   /* Load heightmap. */
-  int mapwidth = 0;
-  int mapheight = 0;
   int height = 0;
-  int components = 0;
 
   FILE *hmFile = fopen (heightmap_name , "r");
 
@@ -501,10 +484,6 @@ int main(int argc, char * argv[])
   // (i.e. "<" vs "<=" or something).
   int width = 1024 * 4 + 1;
   height = width;
-
-  float dummyf;
-  float dummyf2;
-
 
   PR_INIT_PROFILER();
 
@@ -560,13 +539,11 @@ int main(int argc, char * argv[])
   SbVec3f * points = coords->point.startEditing();
   SbVec2f * texture_points = texture_coords->point.startEditing();
   SbVec3f * normal_points = normals->vector.startEditing();
-  SoSFImage * image = new SoSFImage();
   SbVec2s imageSize(imageWidth, imageHeight);
   unsigned char *imageMap = new unsigned char[imageWidth * imageHeight * 3];
   int pointCount = 0;
   int pointTerrainCount = 0;
-  float x,y;
-  float firsty = 0;
+  float x = 0, y = 0;
   float z = 0;
   float zvalue = 0;
 
@@ -811,7 +788,6 @@ int main(int argc, char * argv[])
   SoTransform *transform = new SoTransform;
   transform->translation.setValue(3.79-z/2, y/2, 0 );
 
-  SoResetTransform *resetForMarker = new SoResetTransform();
   SoResetTransform *resetForTerrain = new SoResetTransform();
 
   SoCube *marker = new SoCube();
