@@ -83,6 +83,29 @@ int algorithm = ID_ALG_ROAM;
 float animation_time = 30.0f;
 float frame_time = 0.04f;
 SbBool is_synchronize = FALSE;
+float marker_long = -124.0;
+float marker_lat  = 40.0;
+
+/* Callback for moving the marker pin around. */
+void markerCallback(void *userData,  SoEventCallback * eventCB) {
+  const SoKeyboardEvent * event =
+      reinterpret_cast<const SoKeyboardEvent *>(eventCB->getEvent());
+
+  if (SO_KEY_PRESS_EVENT(event, NUMBER_1)) {
+    marker_long = marker_long - 0.001;
+  } else if (SO_KEY_PRESS_EVENT(event, NUMBER_2)) {
+    marker_long = marker_long + 0.001;
+  } else if (SO_KEY_PRESS_EVENT(event, NUMBER_3)) {
+    marker_lat = marker_lat - 0.001;
+  } else if (SO_KEY_PRESS_EVENT(event, NUMBER_4)) {
+    marker_lat = marker_lat + 0.001;
+  } else {
+    return;
+  }
+
+  SoTransform *pinMarkerTrans = reinterpret_cast<SoTransform *> (userData);
+  pinMarkerTrans->translation.setValue(3.79-marker_lat, marker_long, 0);
+}
 
 /* Change terrain properties by key press callback. */
 void terrainCallback(void * userData, SoEventCallback * eventCB)
@@ -786,7 +809,9 @@ int main(int argc, char * argv[])
   SoTransparencyType *transType = new SoTransparencyType();
   transType->value = SoTransparencyType::BLEND;
   SoTransform *transform = new SoTransform;
-  transform->translation.setValue(3.79-z/2, y/2, 0 );
+          marker_lat = z/2;
+          marker_long = y/2;
+	  transform->translation.setValue(3.79-marker_lat, marker_long, 0);
 
   SoResetTransform *resetForTerrain = new SoResetTransform();
 
@@ -804,6 +829,11 @@ int main(int argc, char * argv[])
   markerSep->addChild(marker);
   markerSep->addChild(pinHeadTrans);
   markerSep->addChild(sphere);
+  SoEventCallback * marker_callback = new SoEventCallback();
+   marker_callback->addEventCallback(
+       SoKeyboardEvent::getClassTypeId(),
+       markerCallback,
+       transform);
  
   /* Connect scene graph nodes. */
   root->ref();
@@ -811,6 +841,7 @@ int main(int argc, char * argv[])
 	  root->addChild(separator);
 	  separator->addChild(terrain_callback);
 	  separator->addChild(style_callback);
+          separator->addChild(marker_callback);
 	  separator->addChild(camera);
 	  separator->addChild(light);
           separator->addChild(terrainSeparator);
