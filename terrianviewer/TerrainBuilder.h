@@ -17,6 +17,10 @@ class TerrainBuilder {
     void initialize();
     float getRefLong();
     float getRefLat();
+    enum ColorMap {
+      STANDARD_COLOR = 0,
+      EXPERIMENTAL_COLOR = 1
+    };
 
   private:
     // The map points.
@@ -31,4 +35,17 @@ class TerrainBuilder {
     int terrainWidth; 
     float ref_lat;
     float ref_long;
+
+    int getRed(float);
+    int getBlue(float);
+    int getGreen(float);
+    void processColorFor(float);
+    void standardProcessColorFor(float);
+    void experimentalProcessColorFor(float);
+
+    int colorMap;
+    float lastDepth;
+    int lastBlue;
+    int lastRed;
+    int lastGreen;
 };

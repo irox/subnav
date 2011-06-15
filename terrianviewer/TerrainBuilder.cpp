@@ -11,6 +11,118 @@ void TerrainBuilder::setWidth(int width) {
   terrainWidth = width;
 }
 
+int TerrainBuilder::getBlue(float depth) {
+  processColorFor(depth);
+  return lastBlue;
+}
+
+int TerrainBuilder::getRed(float depth) {
+  processColorFor(depth);
+  return lastRed;}
+
+int TerrainBuilder::getGreen(float depth) {
+  processColorFor(depth);
+  return lastGreen;
+}
+
+void TerrainBuilder::processColorFor(float depth) {
+  if (depth != lastDepth) {
+    switch(colorMap) {
+      case TerrainBuilder::STANDARD_COLOR:
+        standardProcessColorFor(depth);
+        break;
+      case TerrainBuilder::EXPERIMENTAL_COLOR:
+        experimentalProcessColorFor(depth);
+      default:
+        experimentalProcessColorFor(depth);
+    }
+    lastDepth = depth;
+  }
+}
+
+void TerrainBuilder::standardProcessColorFor(float depth) {
+  if (depth> -150 && depth <= 0) {
+    if (depth >= -2.0) {
+      depth = -2.0;
+    }
+    lastBlue = int(depth * 1.7);
+    lastGreen = 0;
+    lastRed = 0;
+  } else if (depth < -300 && depth > -600) {
+    lastBlue = 0;
+    lastGreen = int(depth / 1.33);
+    lastRed = 225;
+  } else if (depth < -600) {
+    lastBlue = depth < 0 ? depth / 23 : 0;
+    lastGreen = 0;
+    lastRed = depth < 0 ? depth / 23 : 0;
+  } else {
+    lastBlue = depth < 0 ? depth / 23 : 0;
+    lastGreen = depth > 0 ? int(depth) % 255 : int(depth) %  250;
+    lastRed = depth > 0 ? 50 + depth / 15 : 0;
+  }
+  lastDepth = depth;
+}
+
+/* Depth coloring in bands based on:
+ * scuba depth
+ * K250 depth
+ * K350 depth
+ * the rest
+ */
+void TerrainBuilder::experimentalProcessColorFor(float depth) {
+  if (depth < -10 && int(-depth) % 500 < 10) {
+    /* draw contours */
+    lastBlue = 255;
+    lastRed = 255;
+    lastGreen = 255;
+  } else if (depth> -40 && depth <= 0) {
+    /* SCUBA depth */
+    if (depth >= -2.0) {
+      depth = -2.0;
+    }
+    lastBlue = 255;
+    lastRed = 0;
+    lastGreen = 165 + int(depth*2);
+  } else if (depth>-42 && depth <= -40) {
+    lastBlue = 0;
+    lastRed = 255;
+    lastGreen = 0;
+  } else if (depth> -75 && depth <= -40) {
+    /* K250 depth */
+    lastBlue = 255 + (40 + int(depth)) * 5;
+    lastRed = 0;
+    lastGreen = 60 + (40 + int(depth));
+  } else if (depth> -77 && depth <= -75) {
+    lastBlue = 0;
+    lastRed = 255;
+    lastGreen = 0; 
+  } else if (depth> -105 && depth <= -75) {
+    /* K350 depth */
+    lastBlue = 255;
+    lastRed = 0;
+    lastGreen = 40 - (75 + int(depth)) * 3;
+  } else if (depth > -107 && depth <= -105) {
+    lastBlue = 0;
+    lastRed = 255;
+    lastGreen = 0;
+  } else if (depth < -300 && depth > -600) {
+    lastBlue = 0;
+    lastGreen = int(depth / 1.33);
+    lastRed = 225;
+  } else if (depth < -600) {
+    lastBlue = depth < 0 ? depth / 23 : 0;
+    lastGreen = 0;
+    lastRed = depth < 0 ? depth / 23 : 0;
+  } else {
+    lastBlue = depth < 0 ? depth / 23 : 0;
+    lastGreen = depth > 0 ? int(depth) % 255 : int(depth) %  250;
+    lastRed = depth > 0 ? 50 + depth / 15 : 0;
+  }
+  lastDepth = depth;
+}
+
+
 void TerrainBuilder::loadXYZFile(char *filename, int dataCount) {
   int pointCount = 0;
   int pointTerrainCount = 0;
@@ -71,29 +183,6 @@ void TerrainBuilder::loadXYZFile(char *filename, int dataCount) {
       pointTerrainCount = col_count + row_count * terrainWidth;
       
       // Calculate pixel colo(u)r...
-      int red, green, blue;
-
-      if (zvalue > -150 && zvalue <= 0) {
-        if (zvalue >= -2.0) {
-          zvalue = -2.0;
-        }
-        blue = int(zvalue * 1.7);
-        green = 0;
-        red = 0;
-      } else if (zvalue < -300 && zvalue > -600) {
-        blue = 0;
-        green = int(zvalue / 1.33);
-        red = 225;
-      } else if (zvalue < -600) {
-        blue = zvalue < 0 ? zvalue / 23 : 0;
-        green = 0;
-        red = zvalue < 0 ? zvalue / 23 : 0;
-      } else {
-        blue = zvalue < 0 ? zvalue / 23 : 0;
-        green = zvalue > 0 ? int(zvalue) % 255 : int(zvalue) %  250;
-        red = zvalue > 0 ? 50 + zvalue / 15 : 0;
-      }
-
       if (imageIndex % (terrainWidth * 3) < 1) {
         imageMap[imageIndex++] = 0;
         imageMap[imageIndex++] = 0;
@@ -108,9 +197,9 @@ void TerrainBuilder::loadXYZFile(char *filename, int dataCount) {
         imageMap[imageIndex++] = 255;
         imageMap[imageIndex++] = 255;
       } else {
-        imageMap[imageIndex++] = red;
-        imageMap[imageIndex++] = green;
-        imageMap[imageIndex++] = blue;
+        imageMap[imageIndex++] = getRed(zvalue);
+        imageMap[imageIndex++] = getGreen(zvalue);
+        imageMap[imageIndex++] = getBlue(zvalue);
       }
       points[pointTerrainCount] = SbVec3f( 3.79087-z, y, -x );
       texture_points[pointCount] = SbVec2f(col_count * 1.0/ terrainWidth * 1.0,
@@ -256,6 +345,8 @@ void TerrainBuilder::initialize() {
   normals->vector.setNum(terrainWidth * terrainHeight);
   normal_binding->value.setValue(SoNormalBinding::PER_VERTEX_INDEXED);
 
+  colorMap = TerrainBuilder::EXPERIMENTAL_COLOR;
+  lastDepth = -999999;
 }
 
 SoCoordinate3 *TerrainBuilder::getMapCoordinates() {
