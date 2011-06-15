@@ -63,6 +63,9 @@
 #include <profiler/SoProfileSceneManager.h>
 #include <SoQtFreeViewer.h>
 #include <utils.h>
+
+#include <TerrainBuilder.h>
+
 // TODO(irox): Add check for Position.hpp to configure.ac.
 #include <libnav/Position.hpp>
 using namespace libnav;
@@ -541,8 +544,6 @@ int main(int argc, char * argv[])
   /* Load heightmap. */
   int height = 0;
 
-  FILE *hmFile = fopen (heightmap_name , "r");
-
   // SoTerrain only seems to handle size which
   // are multiples of 1024.  The +1 maybe due
   // to some sloppiness some later in the code
@@ -584,258 +585,28 @@ int main(int argc, char * argv[])
   terrainSeparator->renderCulling.setValue(SoSeparator::OFF);
  
   SoEventCallback * terrain_callback = new SoEventCallback();
-  SoTexture2 * texture = new SoTexture2();
-  SoTextureCoordinate2 * texture_coords = new SoTextureCoordinate2();
-  SoCoordinate3 * coords = new SoCoordinate3();
-  SoNormal * normals = new SoNormal();
+
+  /* Use the TerrainBuilder class to generating the various components. */
+  TerrainBuilder terrainBuilder;
+  terrainBuilder.setHeight(height);
+  terrainBuilder.setWidth(width);
+  terrainBuilder.initialize();
+  terrainBuilder.loadXYZFile(heightmap_name, 4801 * 4801);
+
+  SoTexture2 * texture = terrainBuilder.getTexture();
+  SoTextureCoordinate2 * texture_coords = terrainBuilder.getTextureCoordinates();
+  SoCoordinate3 * coords = terrainBuilder.getMapCoordinates();
+  SoNormal * normals = terrainBuilder.getNormals();
+
   SoNormalBinding * normal_binding = new SoNormalBinding();
+
+  ref_long = terrainBuilder.getRefLong();
+  ref_lat  = terrainBuilder.getRefLat();
 
   style_callback->addEventCallback(SoKeyboardEvent::getClassTypeId(),
     styleCallback, style);
   light->direction.setValue(-0.5f, 0.5f, -1.0f);
-  coords->point.setNum(width * height);
-  int imageWidth = width;
-  int imageHeight = height;
-  texture_coords->point.setNum(imageWidth * imageHeight );
-  normals->vector.setNum(width * height);
   normal_binding->value.setValue(SoNormalBinding::PER_VERTEX_INDEXED);
-
-  /* Create heightmap. */
-  SbVec3f * points = coords->point.startEditing();
-  SbVec2f * texture_points = texture_coords->point.startEditing();
-  SbVec3f * normal_points = normals->vector.startEditing();
-  SbVec2s imageSize(imageWidth, imageHeight);
-  unsigned char *imageMap = new unsigned char[imageWidth * imageHeight * 3];
-  int pointCount = 0;
-  int pointTerrainCount = 0;
-  float x = 0, y = 0;
-  float z = 0;
-  float zvalue = 0;
-
-  float lat = 0;
-  float lng = 0;
-
-  float first_lat = 0;
-  float first_lng = 0;
-
-  float current_lat = 999;
-
-
-  int I = 0;
-  int imageIndex = 0;
- 
-  int row_count = -1;
-  int col_count = 0;
-  Position first, loc, previous_loc;
-	
-  for (I = 0; I < 4801 * 4801; I++)
-  {
-    fscanf(hmFile, "%f %f %f", &lng, &lat, &zvalue);
-
-    if (current_lat == 999) {
-      // Set first position (everything is should drawn relative to this point.
-      first.set_LLA(0.0, 0.0, 0.0, WGS84);
-      ref_lat = first_lat = lat;
-      ref_long = first_lng = lng;
-      previous_loc = first;
-    }
-
-    if (current_lat != lat) {
-      // We are starting a new row.
-      current_lat = lat;
-      col_count = width - 1; //0;
-      row_count++;
- //std::cout <<  pointTerrainCount << " " << zvalue << " "  << (loc.get_x() - first.get_x()) << " " << (loc.get_y() - first.get_y()) << " " << (loc.get_z() - first.get_z()) << std::endl;
-    } else {
-      col_count--;
-    }
-    
-//      std::cout <<  pointTerrainCount << " col = " << col_count << "  row = " << row_count << std::endl;
-
-    if (( col_count >= 0 ) && ( row_count < width)) {
-      loc.set_LLA(lat - first_lat, lng - first_lng, zvalue, WGS84);
-
-      x = (first.get_x() - loc.get_x()) / 100000;
-      y = loc.get_y() / 100000;
-      z = loc.get_z() / 100000;
-
-      pointTerrainCount = col_count + row_count * width;
-//      std::cout <<  pointTerrainCount << " x = " << x << "  y = " << y << "   z = " << z << std::endl;
-    //  std::cout <<  pointTerrainCount << " col: " << column << " row: " << row << " " << I / mapwidth << " " << (mapheight - height -1) << " " << width - I % mapwidth << " " << width - I % mapwidth << std::endl;
-     
-     // Calculate pixel colo(u)r...
-     int red, green, blue;
-
-     if (zvalue > -150 && zvalue <= 0) {
-       if (zvalue >= -2.0) {
-         zvalue = -2.0;
-       }
-       blue = int(zvalue * 1.7);
-       green = 0;
-       red = 0;
-     } else if (zvalue < -300 && zvalue > -600) {
-       blue = 0;// 225; //zvalue < 0 ? zvalue / 23 : 0;
-       green = int(zvalue / 1.33);//zvalue < 0 ? zvalue / 23 : 0;
-       red = 225;
-     } else if (zvalue < -600) {
-       blue = zvalue < 0 ? zvalue / 23 : 0;
-       green = 0;
-       red = zvalue < 0 ? zvalue / 23 : 0;
-     } else {
-       blue = zvalue < 0 ? zvalue / 23 : 0;
-       green = zvalue > 0 ? int(zvalue) % 255 : int(zvalue) %  250;
-       red = zvalue > 0 ? 50 + zvalue / 15 : 0; 
-     }
-
-     if (imageIndex % (imageWidth * 3) < 1) {
-       imageMap[imageIndex++] = 0;
-       imageMap[imageIndex++] = 0;
-       imageMap[imageIndex++] = 255;
-
-     } else if (imageIndex < 6 * imageWidth) {
-       imageMap[imageIndex++] = 255;
-       imageMap[imageIndex++] = 0;
-       imageMap[imageIndex++] = 0;
-     } else if (imageIndex % (imageWidth * 3) < 6) {
-       imageMap[imageIndex++] = 255;
-       imageMap[imageIndex++] = 255;
-       imageMap[imageIndex++] = 255;
-     } else {
-       imageMap[imageIndex++] = red;
-       imageMap[imageIndex++] = green;
-       imageMap[imageIndex++] = blue;
-     }
-      points[pointTerrainCount] = SbVec3f( 3.79087-z, y, -x );
-      texture_points[pointCount] = SbVec2f(col_count * 1.0/ width * 1.0,
-                                           row_count * 1.0 / height * 1.0);
-      pointCount++;
-      previous_loc = loc;
-    }
-  }
-  
-  texture->image.setValue(imageSize, 3, imageMap, SoSFImage::COPY);
-  std::cout << I << "/" << pointCount << " x y z = (" << x << ", " << y << ", " << z << ")" << std::endl;
-
-  /* Compute inner normals. */
-  for (int Y = 1; Y < (height - 1); ++Y)
-  {
-    for (int X = 1; X < (width - 1); ++X)
-    {
-      int index = Y * width + X;
-      SbVec3f normal = SbVec3f(0.0f, 0.0f, 0.0f);
-
-      normal += (points[index - 1] - points[index]).cross(points[index
-        - width] - points[index]);
-      normal += (points[index - width] - points[index]).cross(points[index
-        - width + 1] - points[index]);
-      normal += (points[index - width + 1] - points[index]).cross(points[index
-        + 1] - points[index]);
-      normal += (points[index + 1] - points[index]).cross(points[index
-        + width] - points[index]);
-      normal += (points[index + width] - points[index]).cross(points[index
-        + width - 1] - points[index]);
-      normal += (points[index + width - 1] - points[index]).cross(points[index
-        - 1] - points[index]);
-      normal.normalize();
-      normal_points[index] = normal;
-    }
-  }
-
-  /* Compute normals at top and bottom border. */
-  for (int X = 1; X < (width - 1); ++X)
-  {
-    int index_1 = X;
-    int index_2 = (height - 1) * width + X;
-    SbVec3f normal_1 = SbVec3f(0.0f, 0.0f, 0.0f);
-    SbVec3f normal_2 = SbVec3f(0.0f, 0.0f, 0.0f);
-
-    /* Top border. */
-    normal_1 += (points[index_1 + 1] - points[index_1]).cross(points[index_1
-      + width] - points[index_1]);
-    normal_1 += (points[index_1 + width] - points[index_1]).cross(points[index_1
-      + width - 1] - points[index_1]);
-    normal_1 += (points[index_1 + width - 1] - points[index_1]).cross(points[index_1
-      - 1] - points[index_1]);
-
-    /* Bottom border. */
-    normal_2 += (points[index_2 - 1] - points[index_2]).cross(points[index_2
-      - width] - points[index_2]);
-    normal_2 += (points[index_2 - width] - points[index_2]).cross(points[index_2
-      - width + 1] - points[index_2]);
-    normal_2 += (points[index_2 - width + 1] - points[index_2]).cross(points[index_2
-      + 1] - points[index_2]);
-
-    normal_1.normalize();
-    normal_2.normalize();
-    normal_points[index_1] = normal_1;
-    normal_points[index_2] = normal_2;
-  }
-
-  /* Compute normals at left and right border. */
-  for (int Y2 = 1; Y2 < (height - 1); ++Y2)
-  {
-    int index_1 = Y2 * width;
-    int index_2 = index_1 + width - 1;
-    SbVec3f normal_1 = SbVec3f(0.0f, 0.0f, 0.0f);
-    SbVec3f normal_2 = SbVec3f(0.0f, 0.0f, 0.0f);
-
-    /* Left border. */
-    normal_1 += (points[index_1 - width] - points[index_1]).cross(points[index_1
-      - width + 1] - points[index_1]);
-    normal_1 += (points[index_1 - width + 1] - points[index_1]).cross(points[index_1
-      + 1] - points[index_1]);
-    normal_1 += (points[index_1 + 1] - points[index_1]).cross(points[index_1
-      + width] - points[index_1]);
-
-    /* Right border. */
-    normal_2 += (points[index_2 - 1] - points[index_2]).cross(points[index_2
-      - width] - points[index_2]);
-    normal_2 += (points[index_2 + width] - points[index_2]).cross(points[index_2
-      + width - 1] - points[index_2]);
-    normal_2 += (points[index_2 + width - 1] - points[index_2]).cross(points[index_2
-      - 1] - points[index_2]);
-
-    normal_1.normalize();
-    normal_2.normalize();
-    normal_points[index_1] = normal_1;
-    normal_points[index_2] = normal_2;
-  }
-
-  /* Compute normals in corners. */
-  int index;
-  SbVec3f normal;
-
-  index = 0;
-  normal = (points[index + 1] - points[index]).cross(points[index + width]
-    - points[index]);
-  normal.normalize();
-  normal_points[index] = normal;
-
-  index = (height * width) - 1;
-  normal = (points[index - 1] - points[index]).cross(points[index - width]
-    - points[index]);
-  normal.normalize();
-  normal_points[index] = normal;
-
-  index = (height - 1) * width;
-  normal = (points[index - width] - points[index]).cross(points[index - width + 1]
-    - points[index]);
-  normal += (points[index - width + 1] - points[index]).cross(points[index + 1]
-    - points[index]);
-  normal.normalize();
-  normal_points[index] = normal;
-
-  index = width - 1;
-  normal += (points[index + width] - points[index]).cross(points[index + width - 1]
-    - points[index]);
-  normal += (points[index + width - 1] - points[index]).cross(points[index - 1]
-    - points[index]);
-  normal.normalize();
-  normal_points[index] = normal;
-
-  coords->point.finishEditing();
-  texture_coords->point.finishEditing();
-  normals->vector.finishEditing();
 
   // Create the push pin marker.
   SoMaterial *material = new SoMaterial;
@@ -997,7 +768,7 @@ int main(int argc, char * argv[])
   }
   else
   {
-    camera->position.setValue(3.79 - z, y, x * 2);
+    camera->position.setValue(3.79 , 0, 1);
   }
 
   /* Run application. */
