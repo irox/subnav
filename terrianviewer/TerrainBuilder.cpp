@@ -143,6 +143,9 @@ void TerrainBuilder::loadXYZFile(char *filename, int dataCount) {
   int I = 0;
   int imageIndex = 0;
 
+  // Offset handling is currently broken.  (Fix or remove)
+  int xoffset = 0;
+  int yoffset = 0;
   int row_count = -1;
   int col_count = 0;
   Position first, loc;
@@ -175,14 +178,15 @@ void TerrainBuilder::loadXYZFile(char *filename, int dataCount) {
       col_count--;
     }
 
-    if (( col_count >= 0 ) && ( row_count < terrainWidth)) {
+    if (( col_count >= xoffset && col_count < terrainWidth + xoffset ) &&
+        ( row_count >= yoffset && row_count < terrainWidth + yoffset)) {
       loc.set_LLA(lat - first_lat, lng - first_lng, zvalue, WGS84);
 
       x = (first.get_x() - loc.get_x()) / 100000;
       y = loc.get_y() / 100000;
       z = loc.get_z() / 100000;
 
-      pointTerrainCount = col_count + row_count * terrainWidth;
+      pointTerrainCount = col_count + xoffset + (row_count + yoffset) * terrainWidth;
       
       // Calculate pixel colo(u)r...
       if (imageIndex % (terrainWidth * 3) < 1) {
@@ -204,8 +208,9 @@ void TerrainBuilder::loadXYZFile(char *filename, int dataCount) {
         imageMap[imageIndex++] = getBlue(zvalue);
       }
       points[pointTerrainCount] = SbVec3f( 3.79087-z, y, -x );
-      texture_points[pointCount] = SbVec2f(col_count * 1.0/ terrainWidth * 1.0,
-                                           row_count * 1.0 / terrainHeight * 1.0);
+      texture_points[pointCount] = SbVec2f(
+          (col_count + xoffset) * 1.0 / (terrainWidth + xoffset) * 1.0,
+          (row_count - yoffset) * 1.0 / (terrainHeight) * 1.0);
       pointCount++;
     }
   }
