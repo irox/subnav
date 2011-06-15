@@ -71,7 +71,10 @@ void TerrainBuilder::standardProcessColorFor(float depth) {
  * the rest
  */
 void TerrainBuilder::experimentalProcessColorFor(float depth) {
-  if (depth < -10 && int(-depth) % 500 < 10) {
+  int contourSpacing = 1000;
+  int contourZone = int(depth / contourSpacing);
+  int oldContourZone = int(lastDepth / contourSpacing);
+  if (depth < -10 && contourZone != oldContourZone) {
     /* draw contours */
     lastBlue = 255;
     lastRed = 255;
@@ -119,7 +122,6 @@ void TerrainBuilder::experimentalProcessColorFor(float depth) {
     lastGreen = depth > 0 ? int(depth) % 255 : int(depth) %  250;
     lastRed = depth > 0 ? 50 + depth / 15 : 0;
   }
-  lastDepth = depth;
 }
 
 
