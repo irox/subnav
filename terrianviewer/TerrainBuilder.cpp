@@ -64,6 +64,10 @@ void TerrainBuilder::standardProcessColorFor(float depth) {
   lastDepth = depth;
 }
 
+bool isBoundary(float lastDepth, float depth, float targetDepth) {
+  return ((depth <= targetDepth && lastDepth >= targetDepth) ||
+          (depth >= targetDepth && lastDepth <= targetDepth));
+}
 /* Depth coloring in bands based on:
  * scuba depth
  * K250 depth
@@ -79,6 +83,26 @@ void TerrainBuilder::experimentalProcessColorFor(float depth) {
     lastBlue = 255;
     lastRed = 255;
     lastGreen = 255;
+  } else if (isBoundary(lastDepth, depth, -40)) {
+    /* SCUBA max contour. */
+    lastBlue = 0;
+    lastRed = 255;
+    lastGreen = 0;
+  } else if (isBoundary(lastDepth, depth, -75)) {
+    /* K250 max depth contour. */
+    lastBlue = 0;
+    lastRed = 255;
+    lastGreen = 0;
+  } else if (isBoundary(lastDepth, depth, -105)) {
+    /* K350 max depth contour. */
+    lastBlue = 0;
+    lastRed = 255;
+    lastGreen = 0;
+  } else if (isBoundary(lastDepth, depth, -180)) {
+    /* K600 max depth contour. */
+    lastBlue = 0;
+    lastRed = 255;
+    lastGreen = 0;
   } else if (depth> -40 && depth <= 0) {
     /* SCUBA depth */
     if (depth >= -2.0) {
@@ -87,28 +111,16 @@ void TerrainBuilder::experimentalProcessColorFor(float depth) {
     lastBlue = 255;
     lastRed = 0;
     lastGreen = 165 + int(depth*2);
-  } else if (depth>-42 && depth <= -40) {
-    lastBlue = 0;
-    lastRed = 255;
-    lastGreen = 0;
   } else if (depth> -75 && depth <= -40) {
     /* K250 depth */
     lastBlue = 255 + (40 + int(depth)) * 5;
     lastRed = 0;
-    lastGreen = 60 + (40 + int(depth));
-  } else if (depth> -77 && depth <= -75) {
-    lastBlue = 0;
-    lastRed = 255;
-    lastGreen = 0; 
+    lastGreen = 80 + (40 + int(depth));
   } else if (depth> -105 && depth <= -75) {
     /* K350 depth */
     lastBlue = 255;
     lastRed = 0;
     lastGreen = 40 - (75 + int(depth)) * 3;
-  } else if (depth > -107 && depth <= -105) {
-    lastBlue = 0;
-    lastRed = 255;
-    lastGreen = 0;
   } else if (depth < -300 && depth > -600) {
     lastBlue = 0;
     lastGreen = int(depth / 1.33);
