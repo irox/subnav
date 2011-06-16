@@ -65,6 +65,7 @@
 #include <utils.h>
 
 #include <TerrainBuilder.h>
+#include <MarkerPin.h>
 
 // TODO(irox): Add check for Position.hpp to configure.ac.
 #include <libnav/Position.hpp>
@@ -125,31 +126,8 @@ void markerCallback(void *userData,  SoEventCallback * eventCB) {
     return;
   }
   
-  SoTransform *pinMarkerTrans = reinterpret_cast<SoTransform *> (userData);
-  placeMarker(pinMarkerTrans, marker_lat, marker_long);
-}
-
-void updateMarkerText(SoText2 *pinMarkerText, float lat, float lng) {
-  SbString *str = pinMarkerText->string.startEditing();
-
-  str[1].sprintf("%3.3f, %3.3f", marker_long, marker_lat);
-  pinMarkerText->string.finishEditing();
-}
-
-void markerTextCallback(void *userData,  SoEventCallback * eventCB) {
-  const SoKeyboardEvent * event =
-      reinterpret_cast<const SoKeyboardEvent *>(eventCB->getEvent());
-
-  if (SO_KEY_PRESS_EVENT(event, NUMBER_1)) {
-  } else if (SO_KEY_PRESS_EVENT(event, NUMBER_2)) {
-  } else if (SO_KEY_PRESS_EVENT(event, NUMBER_3)) {
-  } else if (SO_KEY_PRESS_EVENT(event, NUMBER_4)) {
-  } else {
-    return;
-  }
-
-  SoText2 *pinMarkerText = reinterpret_cast<SoText2 *> (userData);
-  updateMarkerText(pinMarkerText, marker_lat, marker_long);
+  MarkerPin *markerPin = reinterpret_cast<MarkerPin *> (userData);
+  markerPin->setLocation(marker_lat, marker_long);
 }
 
 /* Change terrain properties by key press callback. */
@@ -578,7 +556,6 @@ int main(int argc, char * argv[])
   SoDrawStyle * style = new SoDrawStyle();
   SoDirectionalLight * light = new SoDirectionalLight();
   SoSeparator * separator = new SoSeparator();
-  SoSeparator * markerSep = new SoSeparator();
   SoSeparator * terrainSeparator = new SoSeparator();
   // not sure turning off Culling here is having any effect.
   terrainSeparator->pickCulling.setValue(SoSeparator::OFF);
@@ -609,60 +586,21 @@ int main(int argc, char * argv[])
   normal_binding->value.setValue(SoNormalBinding::PER_VERTEX_INDEXED);
 
   // Create the push pin marker.
-  SoMaterial *material = new SoMaterial;
-  material->ambientColor.setValue(0.0, 0.0, 0.8);
-  material->diffuseColor.setValue(0.8, 0.8, 0.8);
-  material->transparency.setValue(0.0);
-  material->shininess.setValue(0.6);
-  material->emissiveColor.setValue(0.000000, 0.000000, 0.000000);
-
-  markerSep->addChild(new SoTexture2());
-
-  markerSep->addChild(material);
-  SoTransparencyType *transType = new SoTransparencyType();
-  transType->value = SoTransparencyType::BLEND;
-  SoTransform *transform = new SoTransform;
   marker_lat = 37.753;
   marker_long = -122.440;
-  placeMarker(transform, marker_lat, marker_long);
-
   SoResetTransform *resetForTerrain = new SoResetTransform();
 
-  SoCube *marker = new SoCube();
-  marker->width  = 1.0  / 500;
-  marker->height = 1.0f / 500;
-  marker->depth  = 1.0f / 1;
-  SoTransform *pinHeadTrans = new SoTransform();
-  pinHeadTrans->translation.setValue(0,0,0.5);
-
-  SoSphere *sphere = new SoSphere();
-  sphere->radius = 0.02f;
-
-  SoTransform *pinTextTrans = new SoTransform();
-  pinTextTrans->translation.setValue(0,0,0.05);
-
-  SoText2 *markerLabel = new SoText2();
-  SbString markerTexts[2] = {"Marker1", "x, y"};
-  markerLabel->string.setValues(0, 2, markerTexts);
-  updateMarkerText(markerLabel, marker_lat, marker_long);
-
-  markerSep->addChild(transform);
-  markerSep->addChild(marker);
-  markerSep->addChild(pinHeadTrans);
-  markerSep->addChild(sphere);
-  markerSep->addChild(pinTextTrans);
-  markerSep->addChild(markerLabel);
+  MarkerPin *marker = new MarkerPin();
+  marker->setReferencePosition(ref_lat, ref_long);
+  marker->setLabel("San Francisco");
+  marker->setLocation(marker_lat, marker_long);
 
   SoEventCallback * marker_callback = new SoEventCallback();
    marker_callback->addEventCallback(
        SoKeyboardEvent::getClassTypeId(),
        markerCallback,
-       transform);
-   marker_callback->addEventCallback(
-       SoKeyboardEvent::getClassTypeId(),
-       markerTextCallback,
-       markerLabel);
- 
+       marker);
+
   /* Connect scene graph nodes. */
   root->ref();
   root->addChild(style);
@@ -679,7 +617,7 @@ int main(int argc, char * argv[])
   terrainSeparator->addChild(coords);
   terrainSeparator->addChild(normals);
   terrainSeparator->addChild(normal_binding);
-  separator->addChild(markerSep);
+  separator->addChild(marker->getSoMarker());
 
   switch (algorithm)
   {
