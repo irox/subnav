@@ -207,7 +207,7 @@ void TerrainBuilder::loadXYZFile(char *filename, int dataCount) {
         imageMap[imageIndex++] = getGreen(zvalue);
         imageMap[imageIndex++] = getBlue(zvalue);
       }
-      points[pointTerrainCount] = SbVec3f( 3.79087-z, y, -x );
+      points[pointTerrainCount] = SbVec3f(-z, y, -x);
       texture_points[pointCount] = SbVec2f(
           (col_count + xoffset) * 1.0 / (terrainWidth + xoffset) * 1.0,
           (row_count - yoffset) * 1.0 / (terrainHeight) * 1.0);

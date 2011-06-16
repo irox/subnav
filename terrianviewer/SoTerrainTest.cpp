@@ -105,7 +105,7 @@ void placeMarker(SoTransform *transform, float lat, float lng) {
   float y = loc.get_y() / 100000;
   float z = loc.get_z() / 100000;
 
-  transform->translation.setValue(3.79-z, y, -0.4);
+  transform->translation.setValue(-z, y, -0.4);
 }
 
 /* Callback for moving the marker pin around. */
