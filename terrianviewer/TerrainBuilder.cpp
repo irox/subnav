@@ -113,14 +113,14 @@ void TerrainBuilder::experimentalProcessColorFor(float depth) {
     lastGreen = 165 + int(depth*2);
   } else if (depth> -75 && depth <= -40) {
     /* K250 depth */
-    lastBlue = 255 + (40 + int(depth)) * 5;
+    lastBlue = 255 + (40 + int(depth)) * 3;
     lastRed = 0;
     lastGreen = 80 + (40 + int(depth));
   } else if (depth> -105 && depth <= -75) {
     /* K350 depth */
-    lastBlue = 255;
+    lastBlue = 150 + (75 + int(depth)) * 2 ;
     lastRed = 0;
-    lastGreen = 40 - (75 + int(depth)) * 3;
+    lastGreen = 40 + (75 + int(depth));
   } else if (depth < -300 && depth > -600) {
     lastBlue = 0;
     lastGreen = int(depth / 1.33);
