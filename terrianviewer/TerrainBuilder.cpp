@@ -26,7 +26,8 @@ int TerrainBuilder::getGreen(float depth) {
 }
 
 void TerrainBuilder::processColorFor(float depth) {
-  if (depth != lastDepth) {
+  if ((depth != lastDepth || forceColorMapCalc) && skipColorMapCount < 1) {
+    forceColorMapCalc = false;
     switch(colorMap) {
       case TerrainBuilder::STANDARD_COLOR:
         standardProcessColorFor(depth);
@@ -37,6 +38,8 @@ void TerrainBuilder::processColorFor(float depth) {
         experimentalProcessColorFor(depth);
     }
     lastDepth = depth;
+  } else {
+   skipColorMapCount--;
   }
 }
 
@@ -65,8 +68,8 @@ void TerrainBuilder::standardProcessColorFor(float depth) {
 }
 
 bool isBoundary(float lastDepth, float depth, float targetDepth) {
-  return ((depth <= targetDepth && lastDepth >= targetDepth) ||
-          (depth >= targetDepth && lastDepth <= targetDepth));
+  return ((depth <= targetDepth && lastDepth > targetDepth) ||
+          (depth >= targetDepth && lastDepth < targetDepth));
 }
 /* Depth coloring in bands based on:
  * scuba depth
@@ -75,7 +78,7 @@ bool isBoundary(float lastDepth, float depth, float targetDepth) {
  * the rest
  */
 void TerrainBuilder::experimentalProcessColorFor(float depth) {
-  int contourSpacing = 1000;
+  int contourSpacing = 500;
   int contourZone = int(depth / contourSpacing);
   int oldContourZone = int(lastDepth / contourSpacing);
   if (depth < -10 && contourZone != oldContourZone) {
@@ -83,26 +86,36 @@ void TerrainBuilder::experimentalProcessColorFor(float depth) {
     lastBlue = 255;
     lastRed = 255;
     lastGreen = 255;
+    forceColorMapCalc = true;
+    skipColorMapCount = 2;
   } else if (isBoundary(lastDepth, depth, -40)) {
     /* SCUBA max contour. */
     lastBlue = 0;
     lastRed = 255;
     lastGreen = 0;
+    forceColorMapCalc = true;
+    skipColorMapCount = 2;
   } else if (isBoundary(lastDepth, depth, -75)) {
     /* K250 max depth contour. */
     lastBlue = 0;
     lastRed = 255;
     lastGreen = 0;
+    forceColorMapCalc = true;
+    skipColorMapCount = 2;
   } else if (isBoundary(lastDepth, depth, -105)) {
     /* K350 max depth contour. */
     lastBlue = 0;
     lastRed = 255;
     lastGreen = 0;
+    forceColorMapCalc = true;
+    skipColorMapCount = 2;
   } else if (isBoundary(lastDepth, depth, -180)) {
     /* K600 max depth contour. */
     lastBlue = 0;
     lastRed = 255;
     lastGreen = 0;
+    forceColorMapCalc = true;
+    skipColorMapCount = 2;
   } else if (depth> -40 && depth <= 0) {
     /* SCUBA depth */
     if (depth >= -2.0) {
@@ -366,6 +379,8 @@ void TerrainBuilder::initialize() {
 
   colorMap = TerrainBuilder::EXPERIMENTAL_COLOR;
   lastDepth = -999999;
+  skipColorMapCount = 0;
+  forceColorMapCalc = false;
 }
 
 SoCoordinate3 *TerrainBuilder::getMapCoordinates() {

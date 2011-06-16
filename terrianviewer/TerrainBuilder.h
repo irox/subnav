@@ -45,6 +45,8 @@ class TerrainBuilder {
 
     int colorMap;
     float lastDepth;
+    bool forceColorMapCalc;
+    int skipColorMapCount;
     int lastBlue;
     int lastRed;
     int lastGreen;
