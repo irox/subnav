@@ -54,6 +54,7 @@
 #include <Inventor/nodes/SoResetTransform.h>
 #include <Inventor/nodes/SoSphere.h>
 #include <Inventor/nodes/SoText2.h>
+#include <Inventor/nodes/SoLineSet.h>
 
 #include <Inventor/Qt/SoQt.h>
 #include <Inventor/Qt/viewers/SoQtExaminerViewer.h>
@@ -104,6 +105,8 @@ float ref_long = 0.0;
 float ref_lat = 0.0;
 
 MarkerPin *vesselMarker;
+SoCoordinate3 *vesselTrackCoords;
+SoLineSet *vesselTrack;
 
 /* Callback for moving the marker pin around. */
 void markerCallback(void *userData,  SoEventCallback * eventCB) {
@@ -138,6 +141,11 @@ void updatePositionCallback(void *userData,  SoSensor *sensor) {
   }
   POSITIONDATA_MSG *pos_msg = (POSITIONDATA_MSG*) positiondata_nml.get_address();
   vesselMarker->setLocation(pos_msg->lattitude, pos_msg->longitude);
+  int trackCount = vesselTrackCoords->point.getNum();
+  vesselTrackCoords->point.insertSpace(trackCount, 1);
+  SbVec3f * tracks = vesselTrackCoords->point.startEditing();
+  tracks[trackCount]=vesselMarker->getPos().getValue();
+  vesselTrackCoords->point.finishEditing();
 }
 
 /* Change terrain properties by key press callback. */
@@ -497,6 +505,8 @@ int main(int argc, char * argv[])
   vesselMarker->setLabel("Vessel");
   vesselMarker->setLocation(37.5, -122.0);
 
+  vesselTrack = new SoLineSet();
+  vesselTrackCoords = new SoCoordinate3();
   /* Connect scene graph nodes. */
   root->ref();
   root->addChild(style);
@@ -515,6 +525,8 @@ int main(int argc, char * argv[])
   terrainSeparator->addChild(normal_binding);
   separator->addChild(marker->getSoMarker());
   separator->addChild(vesselMarker->getSoMarker());
+  separator->addChild(vesselTrackCoords);
+  separator->addChild(vesselTrack);
 
   switch (algorithm)
   {

@@ -39,6 +39,10 @@ void MarkerPin::updateMarker() {
   updateMarkerText();
 }
 
+SoSFVec3f MarkerPin::getPos() {
+  return transform->translation;
+}
+
 void MarkerPin::setReferencePosition(float lat, float lng) {
   referenceLat = lat;
   referenceLong = lng;

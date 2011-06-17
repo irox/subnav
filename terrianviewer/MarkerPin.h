@@ -13,6 +13,7 @@ class MarkerPin {
     float getLattitude();
     float getLongitude();
     SoSeparator *getSoMarker();
+    SoSFVec3f getPos();
 
   private:
     void updateMarkerText();
