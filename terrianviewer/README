@@ -3,5 +3,5 @@ Building:
 ./configure --prefix=/home/irox/tmp/terrianviewer --with-soqt=/home/irox/apps/coin3d/ --with-soterrain=/home/irox/apps/nav/ --with-coin=/home/irox/apps/coin3d/ --with-soterrain-includes=/home/irox/source/soterrain/soterrain-0.5/include/
 
 Running:
-./SoTerrainTest -h ~/tmp/irox0003-6308_data/irox0003-6308/irox0003-6308.xyz -r 5000
+./TerrainViewer -h ~/tmp/irox0003-6308_data/irox0003-6308/irox0003-6308.xyz -r 5000
 

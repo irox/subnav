@@ -1,14 +1,14 @@
-bin_PROGRAMS = SoTerrainTest TestPositionServer
+bin_PROGRAMS = TerrainViewer TestPositionServer
 
-SoTerrainTest_SOURCES = SoTerrainTest.cpp \
+TerrainViewer_SOURCES = SoTerrainTest.cpp \
 			TerrainBuilder.cpp \
                         MarkerPin.cpp \
                         nmlPosition_n.cc \
                         SoQtFreeViewer.cpp include/SoQtFreeViewer.h \
                         utils.cpp include/utils.h \
                         include/debug.h
-SoTerrainTest_CPPFLAGS = $(AM_CPPFLAGS)
-SoTerrainTest_LDFLAGS = -lrcs -lnav -lPrProfiler
+TerrainViewer_CPPFLAGS = $(AM_CPPFLAGS)
+TerrainViewer_LDFLAGS = -lrcs -lnav -lPrProfiler
 
 TestPositionServer_SOURCES = TestPositionServer.cpp \
 			     nmlPosition_n.cc
