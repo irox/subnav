@@ -87,9 +87,6 @@ enum
 };
 
 int algorithm = ID_ALG_ROAM;
-float animation_time = 30.0f;
-float frame_time = 0.04f;
-SbBool is_synchronize = FALSE;
 
 // Pin marker long and lat.
 float marker_long = -124.0;
@@ -296,85 +293,6 @@ void styleCallback(void * userData, SoEventCallback * eventCB)
   }
 }
 
-/* Camera animation callback.  */
-void cameraTimerCallback(void * userData, SoSensor * sensor)
-{
-  /* Spatial points for camera movement. */
-  static const int CAMERA_POINTS_COUNT = 10;
-  static const SbVec3f camera_positions[CAMERA_POINTS_COUNT] =
-    {SbVec3f(0.0f, 0.1f, 0.03f), SbVec3f(0.6f, 0.1f, 0.03f),
-     SbVec3f(0.6f, 0.1f, 0.03f), SbVec3f(0.6f, 0.6f, 0.03f),
-     SbVec3f(0.6f, 0.6f, 0.03f), SbVec3f(0.2f, 0.6f, 0.03f),
-     SbVec3f(0.2f, 0.6f, 0.03f), SbVec3f(0.6f, 0.6f, 0.03f),
-     SbVec3f(0.6f, 0.6f, 0.03f), SbVec3f(0.6f, 0.1f, 0.03f)};
-  static const SbRotation camera_orientations[CAMERA_POINTS_COUNT] =
-    {SbRotation(SbVec3f(1.0f, 0.0f, 0.0f), static_cast<float>(M_PI) / 2.0f) *
-       SbRotation(SbVec3f(0.0f, 0.0f, 1.0f), -static_cast<float>(M_PI) / 2.0f),
-     SbRotation(SbVec3f(1.0f, 0.0f, 0.0f), static_cast<float>(M_PI) / 2.0f) *
-       SbRotation(SbVec3f(0.0f, 0.0f, 1.0f), -static_cast<float>(M_PI) / 2.0f),
-     SbRotation(SbVec3f(1.0f, 0.0f, 0.0f), static_cast<float>(M_PI) / 2.0f) *
-       SbRotation(SbVec3f(0.0f, 0.0f, 1.0f), 0.0f),
-     SbRotation(SbVec3f(1.0f, 0.0f, 0.0f), static_cast<float>(M_PI) / 2.0f) *
-       SbRotation(SbVec3f(0.0f, 0.0f, 1.0f), 0.0f),
-     SbRotation(SbVec3f(1.0f, 0.0f, 0.0f), static_cast<float>(M_PI) / 2.0f) *
-       SbRotation(SbVec3f(0.0f, 0.0f, 1.0f), static_cast<float>(M_PI) / 2.0f),
-     SbRotation(SbVec3f(1.0f, 0.0f, 0.0f), static_cast<float>(M_PI) / 2.0f) *
-       SbRotation(SbVec3f(0.0f, 0.0f, 1.0f), static_cast<float>(M_PI) / 2.0f),
-     SbRotation(SbVec3f(1.0f, 0.0f, 0.0f), static_cast<float>(M_PI) / 2.0f) *
-       SbRotation(SbVec3f(0.0f, 0.0f, 1.0f), -static_cast<float>(M_PI) / 2.0f),
-     SbRotation(SbVec3f(1.0f, 0.0f, 0.0f), static_cast<float>(M_PI) / 2.0f) *
-       SbRotation(SbVec3f(0.0f, 0.0f, 1.0f), -static_cast<float>(M_PI) / 2.0f),
-     SbRotation(SbVec3f(1.0f, 0.0f, 0.0f), static_cast<float>(M_PI) / 2.0f) *
-       SbRotation(SbVec3f(0.0f, 0.0f, 1.0f), -static_cast<float>(M_PI)),
-     SbRotation(SbVec3f(1.0f, 0.0f, 0.0f), static_cast<float>(M_PI) / 2.0f) *
-       SbRotation(SbVec3f(0.0f, 0.0f, 1.0f), -static_cast<float>(M_PI))};
-
-  static int frame = 0;
-  static SbTime start_time = SbTime::zero();
-  SoPerspectiveCamera * camera = reinterpret_cast<SoPerspectiveCamera *>
-    (userData);
-
-  if (frame == 0)
-  {
-    camera->position = camera_positions[0];
-    camera->orientation = camera_orientations[0];
-  }
-  else
-  {
-    if (frame == 1)
-    {
-      start_time = SbTime::getTimeOfDay();
-    }
-
-    float position = 0.0;
-    if (is_synchronize)
-    {
-      position = ((SbTime::getTimeOfDay() - start_time).getValue() / animation_time)
-        * CAMERA_POINTS_COUNT;
-    }
-    else
-    {
-      position = ((frame * frame_time) / animation_time) * CAMERA_POINTS_COUNT;
-    }
-
-    int point = static_cast<int>(position);
-    float ratio = position - point;
-
-    if (point >= CAMERA_POINTS_COUNT - 1)
-    {
-      SoQt::exitMainLoop();
-    }
-
-    camera->position = (1.0f - ratio) * camera_positions[point] +
-      ratio * camera_positions[point + 1];
-    SbRotation orientation_1 = camera_orientations[point];
-    SbRotation orientation_2 = camera_orientations[point + 1];
-    camera->orientation = SbRotation::slerp(orientation_1, orientation_2, ratio);
-  }
-
-  frame++;
-}
-
 void renderCallback(void * _render_area, SoSceneManager * scene_manager)
 {
   /* Redraw render area when using custom scene manager. */
@@ -384,26 +302,17 @@ void renderCallback(void * _render_area, SoSceneManager * scene_manager)
 
 void help()
 {
-  std::cout << "Usage: SoTerrainTest -h heightmap [-t texture] [-p profile_file] "
-    "[-a algorithm] [-A animation_time] [-F frame_time] [-e pixel_error] "
-    "[-r triangle_count] [-g tile_size] [-f] [-c] [-v] [-s]" << std::endl;
-  std::cout << "\t-h heightmap\t\tImage with input heightmap." <<
+  std::cout << "Usage: TerrainViewer -h xyz_data_file "
+    "[-a algorithm] [-e pixel_error] "
+    "[-r triangle_count] [-g tile_size] [-f] [-c]" << std::endl;
+  std::cout << "\t-h heightmap\t\tTerrain data, in the format \"lat long depth\"." <<
     std::endl;
-  std::cout << "\t-t texture\t\tImage with terrain texture." << std::endl;
-#ifdef PROFILE
-  std::cout << "\t-p profile_file\t\tFile for profiling output (default: profile.txt)."
-    << std::endl;
-#endif
   std::cout << "\t-a algorithm\t\tAlgorithm of terrain visualization. (default: roam)"
     << std::endl;
   std::cout << "\t\tbrutalforce\t\tBrutal force terrain rendering." <<
     std::endl;
   std::cout << "\t\troam\t\t\tROAM algorithm terrain rendeing." << std::endl;
   std::cout << "\t\tgeomipmapping\t\tGeo Mip-Mapping algorithm terrain rendering."
-    << std::endl;
-  std::cout << "\t-A animation_time\tLength of animation in miliseconds (default: 30 s)."
-    << std::endl;
-  std::cout << "\t-F frame_time\t\tFrame time in miliseconds (default: 40 ms)."
     << std::endl;
   std::cout << "\t-e pixel_error\t\tDisplay error of rendering in pixels (default: 6)."
     << std::endl;
@@ -413,8 +322,6 @@ void help()
     << std::endl;
   std::cout << "\t-f\t\t\tRun application at fullscreen." << std::endl;
   std::cout << "\t-c\t\t\tEnable frustrum culling." << std::endl;
-  std::cout << "\t-v\t\t\tRun animation at application start." << std::endl;
-  std::cout << "\t-s\t\t\tEnable animation synchronization with time." << std::endl;
 }
 
 int main(int argc, char * argv[])
@@ -424,13 +331,12 @@ int main(int argc, char * argv[])
   int triangle_count = 1000;
   int tile_size = 33;
   int pixel_error = 6;
-  SbBool is_animation = FALSE;
   SbBool is_full_screen = FALSE;
   SbBool is_frustrum_culling = TRUE;
 
   /* Get program arguments. */
   int command = 0;
-  while ((command = getopt(argc, argv, "h:t:p:a:A:F:e:r:g:fcvs")) != -1)
+  while ((command = getopt(argc, argv, "h:a:e:r:g:fc")) != -1)
   {
     switch (command)
     {
@@ -461,22 +367,6 @@ int main(int argc, char * argv[])
         }
       }
       break;
-      /* Animation time. */
-      case 'A':
-      {
-        int tmp = 0;
-        sscanf(optarg, "%d", &tmp);
-        animation_time = tmp * 0.001f;
-      }
-      break;
-      /* Animation frame time. */
-      case 'F':
-      {
-        int tmp = 0;
-        sscanf(optarg, "%d", &tmp);
-        frame_time = tmp * 0.001f;
-      }
-      break;
       /* Pixel error of rendering. */
       case 'e':
       {
@@ -505,18 +395,6 @@ int main(int argc, char * argv[])
       case 'c':
       {
         is_frustrum_culling = FALSE;
-      }
-      break;
-      /* Do animation. */
-      case 'v':
-      {
-        is_animation = TRUE;
-      }
-      break;
-      /* Synchronize animation with time. */
-      case 's':
-      {
-        is_synchronize = TRUE;
       }
       break;
       case '?':
@@ -713,25 +591,12 @@ int main(int argc, char * argv[])
   camera->viewAll(root, render_area->getViewportRegion());
   camera->nearDistance.setValue(0.01f);
   render_area->setSceneGraph(root);
-  render_area->setTitle("SoTerrain Test Application");
+  render_area->setTitle("Terrain Viewer Application");
   render_area->setSize(SbVec2s(640, 480));
   render_area->show();
   render_area->setFullScreen(is_full_screen);
 
-
-  /* Run animation or set camera position and orientation. */
-  SoTimerSensor * camera_timer = NULL;
-  if (is_animation)
-  {
-    camera_timer = new SoTimerSensor(cameraTimerCallback,
-      camera);
-    camera_timer->setInterval(frame_time);
-    camera_timer->schedule();
-  }
-  else
-  {
-    camera->position.setValue(3.79 , 0, 1);
-  }
+  camera->position.setValue(3.79 , 0, 1);
 
   SoTimerSensor * positionUpdater = new SoTimerSensor(updatePositionCallback, root);
   positionUpdater->setInterval(0.2f);
@@ -746,7 +611,7 @@ int main(int argc, char * argv[])
 
   /* Free memory. */
   root->unref();
-  delete camera_timer;
+  delete positionUpdater;
   delete render_area;
 
   return EXIT_SUCCESS;
