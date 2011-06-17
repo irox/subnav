@@ -1,6 +1,6 @@
 bin_PROGRAMS = TerrainViewer TestPositionServer
 
-TerrainViewer_SOURCES = SoTerrainTest.cpp \
+TerrainViewer_SOURCES = TerrainViewer.cpp \
 			TerrainBuilder.cpp \
                         MarkerPin.cpp \
                         nmlPosition_n.cc \
