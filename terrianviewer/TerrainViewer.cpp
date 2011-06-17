@@ -105,17 +105,6 @@ float ref_lat = 0.0;
 
 MarkerPin *vesselMarker;
 
-/* Transform to a given lat and long. */
-void placeMarker(SoTransform *transform, float lat, float lng) {
-  Position loc;
-  loc.set_LLA(lat - ref_lat, lng - ref_long, 0.0, WGS84);
-
-  float y = loc.get_y() / 100000;
-  float z = loc.get_z() / 100000;
-
-  transform->translation.setValue(-z, y, -0.4);
-}
-
 /* Callback for moving the marker pin around. */
 void markerCallback(void *userData,  SoEventCallback * eventCB) {
   const SoKeyboardEvent * event =
