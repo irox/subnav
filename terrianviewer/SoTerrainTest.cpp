@@ -66,6 +66,8 @@
 
 #include <TerrainBuilder.h>
 #include <MarkerPin.h>
+#include <rcs.hh>
+#include <nmlPosition.h>
 
 // TODO(irox): Add check for Position.hpp to configure.ac.
 #include <libnav/Position.hpp>
@@ -98,6 +100,8 @@ float marker_lat  = 40.0;
 float ref_long = 0.0;
 float ref_lat = 0.0;
 
+MarkerPin *vesselMarker;
+
 /* Transform to a given lat and long. */
 void placeMarker(SoTransform *transform, float lat, float lng) {
   Position loc;
@@ -128,6 +132,20 @@ void markerCallback(void *userData,  SoEventCallback * eventCB) {
   
   MarkerPin *markerPin = reinterpret_cast<MarkerPin *> (userData);
   markerPin->setLocation(marker_lat, marker_long);
+}
+
+void updatePositionCallback(void *userData,  SoSensor *sensor) {
+  NML positiondata_nml(ex_format, "position_buf1", "TerrainViewer", "../config.nml");
+  switch(positiondata_nml.read()) {
+    case -1:
+      std::cout << "An RCS communication error has occurred." << std::endl;
+      return;
+    case 0:
+      /* Same message as the last time. */
+      return;
+  }
+  POSITIONDATA_MSG *pos_msg = (POSITIONDATA_MSG*) positiondata_nml.get_address();
+  vesselMarker->setLocation(pos_msg->lattitude, pos_msg->longitude);
 }
 
 /* Change terrain properties by key press callback. */
@@ -601,6 +619,11 @@ int main(int argc, char * argv[])
        markerCallback,
        marker);
 
+  vesselMarker = new MarkerPin();
+  vesselMarker->setReferencePosition(ref_lat, ref_long);
+  vesselMarker->setLabel("Vessel");
+  vesselMarker->setLocation(37.5, -122.0);
+
   /* Connect scene graph nodes. */
   root->ref();
   root->addChild(style);
@@ -618,6 +641,7 @@ int main(int argc, char * argv[])
   terrainSeparator->addChild(normals);
   terrainSeparator->addChild(normal_binding);
   separator->addChild(marker->getSoMarker());
+  separator->addChild(vesselMarker->getSoMarker());
 
   switch (algorithm)
   {
@@ -708,6 +732,10 @@ int main(int argc, char * argv[])
   {
     camera->position.setValue(3.79 , 0, 1);
   }
+
+  SoTimerSensor * positionUpdater = new SoTimerSensor(updatePositionCallback, root);
+  positionUpdater->setInterval(0.2f);
+  positionUpdater->schedule();
 
   /* Run application. */
   SoQt::show(window);
