@@ -6,10 +6,10 @@ class MarkerPin {
 
   public:
     MarkerPin();
-    MarkerPin(char *, float, float, float, float);
+    MarkerPin(const char *, float, float, float, float);
     void setLocation(float lat, float lng);
     void setReferencePosition(float lat, float lng);
-    void setLabel(char *);
+    void setLabel(const char *);
     float getLattitude();
     float getLongitude();
     SoSeparator *getSoMarker();
@@ -26,6 +26,6 @@ class MarkerPin {
     float referenceLong;
     float currentLat;
     float currentLong;
-    char *markerLabel;
+    const char *markerLabel;
 };
 

@@ -11,7 +11,7 @@ MarkerPin::MarkerPin() {
   initialize();
 }
 
-MarkerPin::MarkerPin(char *name, float refLat, float refLong, float lat, float lng) {
+MarkerPin::MarkerPin(const char *name, float refLat, float refLong, float lat, float lng) {
   referenceLat = refLat;
   referenceLong = refLong;
   currentLat = lat;
@@ -44,7 +44,7 @@ void MarkerPin::setReferencePosition(float lat, float lng) {
   referenceLong = lng;
 }
 
-void MarkerPin::setLabel(char *name) {
+void MarkerPin::setLabel(const char *name) {
   markerLabel = name;
 }
 
