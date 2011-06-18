@@ -1,4 +1,9 @@
 #include "TerrainBuilder.h"
+#include <Inventor/nodes/SoMaterial.h>
+#include <Inventor/nodes/SoCube.h>
+#include <Inventor/nodes/SoTransform.h>
+#include <geomipmapping/SoSimpleGeoMipmapTerrain.h>
+
 #include <libnav/Position.hpp>
 using namespace libnav;
 
@@ -71,6 +76,7 @@ bool isBoundary(float lastDepth, float depth, float targetDepth) {
   return ((depth <= targetDepth && lastDepth > targetDepth) ||
           (depth >= targetDepth && lastDepth < targetDepth));
 }
+
 /* Depth coloring in bands based on:
  * scuba depth
  * K250 depth
@@ -149,6 +155,24 @@ void TerrainBuilder::experimentalProcessColorFor(float depth) {
   }
 }
 
+SoSeparator *TerrainBuilder::getWater() {
+  SoSeparator *water = new SoSeparator();
+ 
+  SoMaterial *material = new SoMaterial;
+  material->ambientColor.setValue(0.0, 0.0, 0.8);
+  material->diffuseColor.setValue(0.0, 0.0, 0.8);
+  material->transparency.setValue(0.6);
+  material->shininess.setValue(0.6);
+  material->emissiveColor.setValue(0.000000, 0.000000, 0.000000);
+
+  water->addChild(material);
+  water->addChild(waterCoords);
+  SoSimpleGeoMipmapTerrain * terrain = new SoSimpleGeoMipmapTerrain();
+  terrain->mapSize.setValue(terrainWidth);
+
+  water->addChild(terrain);
+  return water;
+}
 
 void TerrainBuilder::loadXYZFile(char *filename, int dataCount) {
   int pointCount = 0;
@@ -180,6 +204,7 @@ void TerrainBuilder::loadXYZFile(char *filename, int dataCount) {
   SbVec3f * points = coords->point.startEditing();
   SbVec2f * texture_points = texture_coords->point.startEditing();
   SbVec3f * normal_points = normals->vector.startEditing();
+  SbVec3f * waterSurfacePoints = waterCoords->point.startEditing();
 
   FILE *hmFile = fopen (filename , "r");
 
@@ -190,8 +215,8 @@ void TerrainBuilder::loadXYZFile(char *filename, int dataCount) {
     if (current_lat == 999) {
       // Set first position (everything is should drawn relative to this point.
       first.set_LLA(0.0, 0.0, 0.0, WGS84);
-      ref_lat = first_lat = lat;
-      ref_long = first_lng = lng;
+      maxLat = minLat = ref_lat = first_lat = lat;
+      maxLong = minLong = ref_long = first_lng = lng;
     }
 
     if (current_lat != lat) {
@@ -201,6 +226,22 @@ void TerrainBuilder::loadXYZFile(char *filename, int dataCount) {
       row_count++;
     } else {
       col_count--;
+    }
+
+    if (lat > maxLat) {
+      maxLat = lat;
+    }
+
+    if (lat < minLat) {
+      minLat = lat;
+    }
+
+    if (lng > maxLong) {
+      maxLong = lng;
+    }
+
+    if (lng < minLong) {
+      minLong = lng;
     }
 
     if (( col_count >= xoffset && col_count < terrainWidth + xoffset ) &&
@@ -233,6 +274,11 @@ void TerrainBuilder::loadXYZFile(char *filename, int dataCount) {
         imageMap[imageIndex++] = getBlue(zvalue);
       }
       points[pointTerrainCount] = SbVec3f(-z, y, -x);
+      loc.set_LLA(lat - first_lat, lng - first_lng, 0.0f, WGS84);
+
+      float seaLevel = (first.get_x() - loc.get_x()) / 100000;
+
+      waterSurfacePoints[pointTerrainCount] = SbVec3f(-z, y, -seaLevel);
       texture_points[pointCount] = SbVec2f(
           (col_count + xoffset) * 1.0 / (terrainWidth + xoffset) * 1.0,
           (row_count - yoffset) * 1.0 / (terrainHeight) * 1.0);
@@ -363,6 +409,7 @@ void TerrainBuilder::loadXYZFile(char *filename, int dataCount) {
   coords->point.finishEditing();
   texture_coords->point.finishEditing();
   normals->vector.finishEditing();
+  waterCoords->point.finishEditing();
 }
 
 void TerrainBuilder::initialize() {
@@ -371,11 +418,13 @@ void TerrainBuilder::initialize() {
   coords = new SoCoordinate3();
   normals = new SoNormal();
   normal_binding = new SoNormalBinding();
+  waterCoords = new SoCoordinate3();
 
   coords->point.setNum(terrainWidth * terrainHeight);
-  texture_coords->point.setNum(terrainWidth * terrainHeight );
+  texture_coords->point.setNum(terrainWidth * terrainHeight);
   normals->vector.setNum(terrainWidth * terrainHeight);
   normal_binding->value.setValue(SoNormalBinding::PER_VERTEX_INDEXED);
+  waterCoords->point.setNum(terrainWidth * terrainHeight);
 
   colorMap = TerrainBuilder::EXPERIMENTAL_COLOR;
   lastDepth = -999999;

@@ -523,6 +523,9 @@ int main(int argc, char * argv[])
   terrainSeparator->addChild(coords);
   terrainSeparator->addChild(normals);
   terrainSeparator->addChild(normal_binding);
+  // Disable water drawning due to performance issues.
+  // separator->addChild(terrainBuilder.getWater());
+
   separator->addChild(marker->getSoMarker());
   separator->addChild(vesselMarker->getSoMarker());
   separator->addChild(vesselTrackCoords);
@@ -587,6 +590,8 @@ int main(int argc, char * argv[])
     }
     break;
   }
+
+//  terrainSeparator->addChild(terrainBuilder.getWater());
 
   /* Setup camera and render area. */
   SoQtFreeViewer * render_area = new SoQtFreeViewer(window);
