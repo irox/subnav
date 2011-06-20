@@ -55,6 +55,7 @@
 #include <Inventor/nodes/SoSphere.h>
 #include <Inventor/nodes/SoText2.h>
 #include <Inventor/nodes/SoLineSet.h>
+#include <Inventor/sensors/SoIdleSensor.h>
 
 #include <Inventor/Qt/SoQt.h>
 #include <Inventor/Qt/viewers/SoQtExaminerViewer.h>
@@ -75,6 +76,7 @@
 #include <MarkerPin.h>
 #include <rcs.hh>
 #include <nmlPosition.h>
+#include <map>
 
 // TODO(irox): Add check for Position.hpp to configure.ac.
 #include <libnav/Position.hpp>
@@ -108,6 +110,8 @@ MarkerPin *vesselMarker;
 SoCoordinate3 *vesselTrackCoords;
 SoLineSet *vesselTrack;
 
+std::map<std::string, MarkerPin*> markerMap;
+
 /* Callback for moving the marker pin around. */
 void markerCallback(void *userData,  SoEventCallback * eventCB) {
   const SoKeyboardEvent * event =
@@ -129,23 +133,65 @@ void markerCallback(void *userData,  SoEventCallback * eventCB) {
   markerPin->setLocation(marker_lat, marker_long);
 }
 
-void updatePositionCallback(void *userData,  SoSensor *sensor) {
-  NML positiondata_nml(ex_format, "position_buf1", "TerrainViewer", "../config.nml");
-  switch(positiondata_nml.read()) {
-    case -1:
-      std::cout << "An RCS communication error has occurred." << std::endl;
-      return;
-    case 0:
-      /* Same message as the last time. */
-      return;
+void timerSensorCallback(void *userData,  SoSensor *sensor) {
+  SoIdleSensor *idleSensor = reinterpret_cast<SoIdleSensor *> (userData);
+  idleSensor->schedule();
+}
+
+/**
+ * Update marker position based on name.  If the marker doesn't
+ * exist, create it.
+ */
+void updateMarkerPosition(SoSeparator *markers, POSITIONDATA_MSG *pos_msg) { 
+  MarkerPin *m;
+  std::map<std::string, MarkerPin*>::iterator itr = markerMap.find(std::string(pos_msg->name));
+  if (itr == markerMap.end()) {
+    std::cout << "creating new marker for " << pos_msg->name << std::endl;
+    m = new MarkerPin();
+    m->setLabel(std::string(pos_msg->name).c_str());
+    m->setReferencePosition(ref_lat, ref_long);
+    m->setLocation(pos_msg->lattitude, pos_msg->longitude);
+
+    markers->addChild(m->getSoMarker());
+    markerMap.insert(std::make_pair(std::string(pos_msg->name), m));
+    std::cout << "markerMap size = " << markerMap.size() << std::endl;
+  } else {
+    m = itr->second;
+    std::cout << "Found a marker for " << pos_msg->name << std::endl;
   }
-  POSITIONDATA_MSG *pos_msg = (POSITIONDATA_MSG*) positiondata_nml.get_address();
-  vesselMarker->setLocation(pos_msg->lattitude, pos_msg->longitude);
-  int trackCount = vesselTrackCoords->point.getNum();
+  m->setLocation(pos_msg->lattitude, pos_msg->longitude);
+ /* TODO(irox): Move the code to update vessel tracks to MarkerPin. 
+ int trackCount = vesselTrackCoords->point.getNum();
+  if (trackCount < 2) {
+    vesselMarker->setLabel(pos_msg->name);
+  }
   vesselTrackCoords->point.insertSpace(trackCount, 1);
   SbVec3f * tracks = vesselTrackCoords->point.startEditing();
   tracks[trackCount]=vesselMarker->getPos().getValue();
   vesselTrackCoords->point.finishEditing();
+ */
+}
+
+/**
+ *  * Process NML position messages and update markers if needed.
+ *   */
+void updatePositionCallback(void *userData,  SoSensor *sensor) {
+  SoSeparator * markers = reinterpret_cast<SoSeparator *> (userData);
+
+  POSITIONDATA_MSG *pos_msg;
+  NML positiondata_nml(ex_format, "position_buf1", "TerrainViewer", "../config.nml");
+  switch(positiondata_nml.read()) {
+    case -1:
+      std::cout << "An RCS communication error has occurred." << std::endl;
+      break;
+    case 0:
+      /* Same message as the last time. */
+      break;
+    case POSITIONDATA_MSG_TYPE:
+      pos_msg = (POSITIONDATA_MSG*) positiondata_nml.get_address();
+      updateMarkerPosition(markers, pos_msg);
+      break;
+  }
 }
 
 /* Change terrain properties by key press callback. */
@@ -449,18 +495,20 @@ int main(int argc, char * argv[])
   SoProfileGroup::initClass();
 
   /* Create scene graph. */
-  SoProfileGroup * root = new SoProfileGroup();
-  SoEventCallback * style_callback = new SoEventCallback();
-  SoPerspectiveCamera * camera = new SoPerspectiveCamera();
-  SoDrawStyle * style = new SoDrawStyle();
-  SoDirectionalLight * light = new SoDirectionalLight();
-  SoSeparator * separator = new SoSeparator();
-  SoSeparator * terrainSeparator = new SoSeparator();
+  SoProfileGroup *root = new SoProfileGroup();
+  SoEventCallback *style_callback = new SoEventCallback();
+  SoPerspectiveCamera *camera = new SoPerspectiveCamera();
+  SoDrawStyle *style = new SoDrawStyle();
+  SoDirectionalLight *light = new SoDirectionalLight();
+  SoSeparator *separator = new SoSeparator();
+  SoSeparator *terrainSeparator = new SoSeparator();
+  SoSeparator *markers = new SoSeparator();
+
   // not sure turning off Culling here is having any effect.
   terrainSeparator->pickCulling.setValue(SoSeparator::OFF);
   terrainSeparator->renderCulling.setValue(SoSeparator::OFF);
  
-  SoEventCallback * terrain_callback = new SoEventCallback();
+  SoEventCallback *terrain_callback = new SoEventCallback();
 
   /* Use the TerrainBuilder class to generating the various components. */
   TerrainBuilder terrainBuilder;
@@ -469,12 +517,12 @@ int main(int argc, char * argv[])
   terrainBuilder.initialize();
   terrainBuilder.loadXYZFile(heightmap_name, 4801 * 4801);
 
-  SoTexture2 * texture = terrainBuilder.getTexture();
-  SoTextureCoordinate2 * texture_coords = terrainBuilder.getTextureCoordinates();
-  SoCoordinate3 * coords = terrainBuilder.getMapCoordinates();
-  SoNormal * normals = terrainBuilder.getNormals();
+  SoTexture2 *texture = terrainBuilder.getTexture();
+  SoTextureCoordinate2 *texture_coords = terrainBuilder.getTextureCoordinates();
+  SoCoordinate3 *coords = terrainBuilder.getMapCoordinates();
+  SoNormal *normals = terrainBuilder.getNormals();
 
-  SoNormalBinding * normal_binding = new SoNormalBinding();
+  SoNormalBinding *normal_binding = new SoNormalBinding();
 
   ref_long = terrainBuilder.getRefLong();
   ref_lat  = terrainBuilder.getRefLat();
@@ -525,9 +573,8 @@ int main(int argc, char * argv[])
   terrainSeparator->addChild(normal_binding);
   // Disable water drawning due to performance issues.
   // separator->addChild(terrainBuilder.getWater());
-
+  separator->addChild(markers);
   separator->addChild(marker->getSoMarker());
-  separator->addChild(vesselMarker->getSoMarker());
   separator->addChild(vesselTrackCoords);
   separator->addChild(vesselTrack);
 
@@ -610,9 +657,19 @@ int main(int argc, char * argv[])
 
   camera->position.setValue(3.79 , 0, 1);
 
-  SoTimerSensor * positionUpdater = new SoTimerSensor(updatePositionCallback, root);
-  positionUpdater->setInterval(0.2f);
-  positionUpdater->schedule();
+  // Use a SoIdleSensor to update marker position, this is because
+  // we can't add new markers when the tree is still being traversed
+  // (only when idle).
+  SoIdleSensor * positionUpdater = new SoIdleSensor();
+  positionUpdater->setFunction(updatePositionCallback);
+  positionUpdater->setData(markers);
+
+  // Use a SoTimeSensor to periodically schedule
+  // the SoIdleSensor to update marker positions.
+  SoTimerSensor * timerSensor = new SoTimerSensor(timerSensorCallback, root);
+  timerSensor->setInterval(0.2f);
+  timerSensor->setData(positionUpdater);
+  timerSensor->schedule();
 
   /* Run application. */
   SoQt::show(window);

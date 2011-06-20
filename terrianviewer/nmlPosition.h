@@ -22,6 +22,8 @@ struct POSITIONDATA_MSG: public NMLmsg
   float heading;
   float pitch;
   float roll;
+
+  char name[256];
 };
 
 /* Declare the NML Format function. */
