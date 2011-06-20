@@ -146,7 +146,6 @@ void updateMarkerPosition(SoSeparator *markers, POSITIONDATA_MSG *pos_msg) {
   MarkerPin *m;
   std::map<std::string, MarkerPin*>::iterator itr = markerMap.find(std::string(pos_msg->name));
   if (itr == markerMap.end()) {
-    std::cout << "creating new marker for " << pos_msg->name << std::endl;
     m = new MarkerPin();
     m->setLabel(std::string(pos_msg->name).c_str());
     m->setReferencePosition(ref_lat, ref_long);
@@ -154,10 +153,8 @@ void updateMarkerPosition(SoSeparator *markers, POSITIONDATA_MSG *pos_msg) {
 
     markers->addChild(m->getSoMarker());
     markerMap.insert(std::make_pair(std::string(pos_msg->name), m));
-    std::cout << "markerMap size = " << markerMap.size() << std::endl;
   } else {
     m = itr->second;
-    std::cout << "Found a marker for " << pos_msg->name << std::endl;
   }
   m->setLocation(pos_msg->lattitude, pos_msg->longitude);
 }

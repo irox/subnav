@@ -48,12 +48,11 @@ void MarkerPin::updateMarker() {
 
      float x = (zeroPos.get_x() - loc.get_x()) / 100000;
      if (trackCount == 1) {
-       std::cout << "track count for " << markerLabel << " = " << trackCount << std::endl;
        // Handle first position in the track.
        tracks[0].setValue(-z, y, -x);
      }
 
-     tracks[trackCount].setValue(-z, y,-x);
+     tracks[trackCount].setValue(-z, y, -x);
      vesselTrackCoords->point.finishEditing();
   }
 
