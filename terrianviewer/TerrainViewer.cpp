@@ -160,16 +160,6 @@ void updateMarkerPosition(SoSeparator *markers, POSITIONDATA_MSG *pos_msg) {
     std::cout << "Found a marker for " << pos_msg->name << std::endl;
   }
   m->setLocation(pos_msg->lattitude, pos_msg->longitude);
- /* TODO(irox): Move the code to update vessel tracks to MarkerPin. 
- int trackCount = vesselTrackCoords->point.getNum();
-  if (trackCount < 2) {
-    vesselMarker->setLabel(pos_msg->name);
-  }
-  vesselTrackCoords->point.insertSpace(trackCount, 1);
-  SbVec3f * tracks = vesselTrackCoords->point.startEditing();
-  tracks[trackCount]=vesselMarker->getPos().getValue();
-  vesselTrackCoords->point.finishEditing();
- */
 }
 
 /**

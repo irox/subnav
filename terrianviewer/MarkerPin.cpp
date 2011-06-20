@@ -8,6 +8,7 @@
 using namespace libnav;
 
 MarkerPin::MarkerPin() {
+  vesselTracks = true;
   initialize();
 }
 
@@ -36,6 +37,26 @@ void MarkerPin::updateMarker() {
   float z = loc.get_z() / 100000;
 
   transform->translation.setValue(-z, y, -0.4);
+
+  if (vesselTracks) {
+     int trackCount = vesselTrackCoords->point.getNum();
+     vesselTrackCoords->point.insertSpace(trackCount, 1);
+     SbVec3f * tracks = vesselTrackCoords->point.startEditing();
+
+     Position zeroPos;
+     zeroPos.set_LLA(0.0, 0.0, 0.0, WGS84);
+
+     float x = (zeroPos.get_x() - loc.get_x()) / 100000;
+     if (trackCount == 1) {
+       std::cout << "track count for " << markerLabel << " = " << trackCount << std::endl;
+       // Handle first position in the track.
+       tracks[0].setValue(-z, y, -x);
+     }
+
+     tracks[trackCount].setValue(-z, y,-x);
+     vesselTrackCoords->point.finishEditing();
+  }
+
   updateMarkerText();
 }
 
@@ -92,12 +113,21 @@ void MarkerPin::initialize() {
   SoTransform *pinTextTrans = new SoTransform();
   pinTextTrans->translation.setValue(0,0,0.05);
 
+  vesselTrack = new SoLineSet();
+  vesselTrackCoords = new SoCoordinate3();
+  markerSeparator->addChild(vesselTrackCoords);
+  markerSeparator->addChild(vesselTrack);
+
   markerSeparator->addChild(transform);
   markerSeparator->addChild(marker);
   markerSeparator->addChild(pinHeadTrans);
   markerSeparator->addChild(sphere);
   markerSeparator->addChild(pinTextTrans);
   markerSeparator->addChild(markerText);
+}
+
+void MarkerPin::setVesselTracks(bool value) {
+  vesselTracks = value;
 }
 
 void MarkerPin::updateMarkerText() {
