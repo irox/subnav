@@ -192,9 +192,9 @@ void TerrainBuilder::loadXYZFile(char *filename, int dataCount) {
   int I = 0;
   int imageIndex = 0;
 
-  // Offset handling is currently broken.  (Fix or remove)
+  // X Offset handling is currently broken.  (Fix or remove)
   int xoffset = 0;
-  int yoffset = 0;
+  int yoffset = yDataPointOffset;
   int row_count = -1;
   int col_count = 0;
   Position first, loc;
@@ -252,7 +252,7 @@ void TerrainBuilder::loadXYZFile(char *filename, int dataCount) {
       y = loc.get_y() / 100000;
       z = loc.get_z() / 100000;
 
-      pointTerrainCount = col_count + xoffset + (row_count + yoffset) * terrainWidth;
+      pointTerrainCount = col_count + xoffset + (row_count - yoffset) * terrainWidth;
       
       // Calculate pixel colo(u)r...
       if (imageIndex % (terrainWidth * 3) < 1) {
@@ -412,6 +412,10 @@ void TerrainBuilder::loadXYZFile(char *filename, int dataCount) {
   waterCoords->point.finishEditing();
 }
 
+/**
+ * TODO(irox): Move this into a constructor or something.  It's rather
+ * confusing since something need set before this method and others after it.
+ */
 void TerrainBuilder::initialize() {
   texture = new SoTexture2();
   texture_coords = new SoTextureCoordinate2();
@@ -430,6 +434,15 @@ void TerrainBuilder::initialize() {
   lastDepth = -999999;
   skipColorMapCount = 0;
   forceColorMapCalc = false;
+  yDataPointOffset = 0;
+}
+
+void TerrainBuilder::setYOffset(int offset) {
+  yDataPointOffset = offset;
+}
+
+void TerrainBuilder::setXOffset(int offset) {
+  xDataPointOffset = offset;
 }
 
 SoCoordinate3 *TerrainBuilder::getMapCoordinates() {

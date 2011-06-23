@@ -10,6 +10,8 @@ class TerrainBuilder {
   public:
     void setHeight(int height);
     void setWidth(int width);
+    void setYOffset(int offset);
+    void setXOffset(int offset);
     void loadXYZFile(char *xyzFilename, int pointCount);
     SoCoordinate3 *getMapCoordinates();
     SoTexture2 *getTexture();
@@ -35,7 +37,10 @@ class TerrainBuilder {
     unsigned char *imageMap;
 
     int terrainHeight;
-    int terrainWidth; 
+    int terrainWidth;
+    int yDataPointOffset;
+    int xDataPointOffset;
+
     float ref_lat;
     float ref_long;
     float maxLat, minLat;
