@@ -2,17 +2,11 @@
 
 # Init autoconf and automake.
 AC_PREREQ(2.59)
-AC_INIT(SoTerrain, 0.5, blackhex@post.cz)
-AC_CONFIG_SRCDIR([SoTerrainTest.cpp])
+AC_INIT(TerrainViewer, 0.5, irox@ix.netcom.com)
+AC_CONFIG_SRCDIR([TerrainViewer.cpp])
 AC_LANG([C++])
 AM_INIT_AUTOMAKE
 AC_CONFIG_MACRO_DIR([m4])
-
-# Subtitution variables
-SO_TERRAIN_VERSION="0.5"
-PR_PROFILER_VERSION="0.1"
-AC_SUBST([SO_TERRAIN_VERSION])
-AC_SUBST([PR_PROFILER_VERSION])
 
 # Checks for programs.
 AC_PROG_CC
