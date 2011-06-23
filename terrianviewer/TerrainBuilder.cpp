@@ -192,8 +192,9 @@ void TerrainBuilder::loadXYZFile(char *filename, int dataCount) {
   int I = 0;
   int imageIndex = 0;
 
-  // X Offset handling is currently broken.  (Fix or remove)
-  int xoffset = 0;
+  // Offset handling, number of columns or rows of data points
+  // to skip. 
+  int xoffset = xDataPointOffset;
   int yoffset = yDataPointOffset;
   int row_count = -1;
   int col_count = 0;
@@ -222,7 +223,7 @@ void TerrainBuilder::loadXYZFile(char *filename, int dataCount) {
     if (current_lat != lat) {
       // We are starting a new row.
       current_lat = lat;
-      col_count = terrainWidth - 1;
+      col_count = terrainWidth - 1 + xoffset;
       row_count++;
     } else {
       col_count--;
@@ -244,7 +245,7 @@ void TerrainBuilder::loadXYZFile(char *filename, int dataCount) {
       minLong = lng;
     }
 
-    if (( col_count >= xoffset && col_count < terrainWidth + xoffset ) &&
+    if (( col_count >= 0 && col_count < terrainWidth ) &&
         ( row_count >= yoffset && row_count < terrainWidth + yoffset)) {
       loc.set_LLA(lat - first_lat, lng - first_lng, zvalue, WGS84);
 
@@ -252,7 +253,7 @@ void TerrainBuilder::loadXYZFile(char *filename, int dataCount) {
       y = loc.get_y() / 100000;
       z = loc.get_z() / 100000;
 
-      pointTerrainCount = col_count + xoffset + (row_count - yoffset) * terrainWidth;
+      pointTerrainCount = col_count + (row_count - yoffset) * terrainWidth;
       
       // Calculate pixel colo(u)r...
       if (imageIndex % (terrainWidth * 3) < 1) {
@@ -280,7 +281,7 @@ void TerrainBuilder::loadXYZFile(char *filename, int dataCount) {
 
       waterSurfacePoints[pointTerrainCount] = SbVec3f(-z, y, -seaLevel);
       texture_points[pointCount] = SbVec2f(
-          (col_count + xoffset) * 1.0 / (terrainWidth + xoffset) * 1.0,
+          col_count * 1.0 / (terrainWidth) * 1.0,
           (row_count - yoffset) * 1.0 / (terrainHeight) * 1.0);
       pointCount++;
     }
