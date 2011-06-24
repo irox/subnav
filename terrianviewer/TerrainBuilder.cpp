@@ -2,7 +2,7 @@
 #include <Inventor/nodes/SoMaterial.h>
 #include <Inventor/nodes/SoCube.h>
 #include <Inventor/nodes/SoTransform.h>
-#include <geomipmapping/SoSimpleGeoMipmapTerrain.h>
+#include <Inventor/nodes/SoQuadMesh.h>
 
 #include <libnav/Position.hpp>
 using namespace libnav;
@@ -167,10 +167,12 @@ SoSeparator *TerrainBuilder::getWater() {
 
   water->addChild(material);
   water->addChild(waterCoords);
-  SoSimpleGeoMipmapTerrain * terrain = new SoSimpleGeoMipmapTerrain();
-  terrain->mapSize.setValue(terrainWidth);
 
-  water->addChild(terrain);
+  SoQuadMesh * mesh = new SoQuadMesh;
+  mesh->verticesPerRow = terrainHeight;
+  mesh->verticesPerColumn = terrainWidth;
+
+  water->addChild(mesh);
   return water;
 }
 

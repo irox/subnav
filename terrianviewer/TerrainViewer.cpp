@@ -367,6 +367,7 @@ void help()
     << std::endl;
   std::cout << "\t-f\t\t\tRun application at fullscreen." << std::endl;
   std::cout << "\t-c\t\t\tEnable frustrum culling." << std::endl;
+  std::cout << "\t-W\t\t\tEnable drawing of water level (perform hit on large maps)." << std::endl;
 }
 
 int main(int argc, char * argv[])
@@ -379,13 +380,14 @@ int main(int argc, char * argv[])
   int edgeSize = 4096;
   int xOffset = 0;
   int yOffset = 0;
+  bool drawWater = false;
 
   SbBool is_full_screen = FALSE;
   SbBool is_frustrum_culling = TRUE;
 
   /* Get program arguments. */
   int command = 0;
-  while ((command = getopt(argc, argv, "h:x:y:s:S:a:e:r:g:fc")) != -1)
+  while ((command = getopt(argc, argv, "h:x:y:s:S:a:e:r:g:fcW")) != -1)
   {
     switch (command)
     {
@@ -465,6 +467,12 @@ int main(int argc, char * argv[])
       case 'c':
       {
         is_frustrum_culling = FALSE;
+      }
+      break;
+      /* Draw water line. */
+      case 'W':
+      {
+        drawWater = true;
       }
       break;
       case '?':
@@ -598,8 +606,10 @@ int main(int argc, char * argv[])
   terrainSeparator->addChild(coords);
   terrainSeparator->addChild(normals);
   terrainSeparator->addChild(normal_binding);
-  // Disable water drawning due to performance issues.
-  // separator->addChild(terrainBuilder.getWater());
+  // Water drawing has performance issues.
+  if (drawWater) {
+    separator->addChild(terrainBuilder.getWater());
+  }
   separator->addChild(markers);
   separator->addChild(marker->getSoMarker());
   separator->addChild(vesselTrackCoords);
