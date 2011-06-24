@@ -18,6 +18,7 @@ MarkerPin::MarkerPin(const char *name, float refLat, float refLong, float lat, f
   currentLat = lat;
   currentLong = lng;
   markerLabel = name;
+  scaleFactor = 100000;
 
   initialize();
   updateMarker();
@@ -29,12 +30,16 @@ void MarkerPin::setLocation(float lat, float lng) {
   updateMarker();
 }
 
+void MarkerPin::setScalingFactor(int scale) {
+  scaleFactor = scale;
+}
+
 void MarkerPin::updateMarker() {
   Position loc;
   loc.set_LLA(currentLat - referenceLat, currentLong - referenceLong, 0.0, WGS84);
 
-  float y = loc.get_y() / 100000;
-  float z = loc.get_z() / 100000;
+  float y = loc.get_y() / scaleFactor;
+  float z = loc.get_z() / scaleFactor;
 
   transform->translation.setValue(-z, y, -0.4);
 
@@ -46,7 +51,7 @@ void MarkerPin::updateMarker() {
      Position zeroPos;
      zeroPos.set_LLA(0.0, 0.0, 0.0, WGS84);
 
-     float x = (zeroPos.get_x() - loc.get_x()) / 100000;
+     float x = (zeroPos.get_x() - loc.get_x()) / scaleFactor;
      if (trackCount == 1) {
        // Handle first position in the track.
        tracks[0].setValue(-z, y, -x);

@@ -199,6 +199,7 @@ void TerrainBuilder::loadXYZFile(char *filename, int dataCount) {
   int row_count = -1;
   int col_count = 0;
   Position first, loc;
+  bool refSet = false;
 
   unsigned char *imageMap = new unsigned char[terrainWidth * terrainHeight * 3];
 
@@ -212,13 +213,6 @@ void TerrainBuilder::loadXYZFile(char *filename, int dataCount) {
   for (I = 0; I < dataCount; I++)
   {
     fscanf(hmFile, "%f %f %f", &lng, &lat, &zvalue);
-
-    if (current_lat == 999) {
-      // Set first position (everything is should drawn relative to this point.
-      first.set_LLA(0.0, 0.0, 0.0, WGS84);
-      maxLat = minLat = ref_lat = first_lat = lat;
-      maxLong = minLong = ref_long = first_lng = lng;
-    }
 
     if (current_lat != lat) {
       // We are starting a new row.
@@ -247,11 +241,18 @@ void TerrainBuilder::loadXYZFile(char *filename, int dataCount) {
 
     if (( col_count >= 0 && col_count < terrainWidth ) &&
         ( row_count >= yoffset && row_count < terrainWidth + yoffset)) {
+      if (!refSet) {
+        // Set first position (everything is should drawn relative to this point.
+        first.set_LLA(0.0, 0.0, 0.0, WGS84);
+        maxLat = minLat = ref_lat = first_lat = lat;
+        maxLong = minLong = ref_long = first_lng = lng;
+        refSet = true;
+      }                  
       loc.set_LLA(lat - first_lat, lng - first_lng, zvalue, WGS84);
 
-      x = (first.get_x() - loc.get_x()) / 100000;
-      y = loc.get_y() / 100000;
-      z = loc.get_z() / 100000;
+      x = (first.get_x() - loc.get_x()) / scaleFactor;
+      y = loc.get_y() / scaleFactor;
+      z = loc.get_z() / scaleFactor;
 
       pointTerrainCount = col_count + (row_count - yoffset) * terrainWidth;
       
@@ -277,7 +278,7 @@ void TerrainBuilder::loadXYZFile(char *filename, int dataCount) {
       points[pointTerrainCount] = SbVec3f(-z, y, -x);
       loc.set_LLA(lat - first_lat, lng - first_lng, 0.0f, WGS84);
 
-      float seaLevel = (first.get_x() - loc.get_x()) / 100000;
+      float seaLevel = (first.get_x() - loc.get_x()) / scaleFactor;
 
       waterSurfacePoints[pointTerrainCount] = SbVec3f(-z, y, -seaLevel);
       texture_points[pointCount] = SbVec2f(
@@ -436,8 +437,12 @@ void TerrainBuilder::initialize() {
   skipColorMapCount = 0;
   forceColorMapCalc = false;
   yDataPointOffset = 0;
+  scaleFactor = 100000;
 }
 
+void TerrainBuilder::setScalingFactor(int scale) {
+  scaleFactor = scale;
+}
 void TerrainBuilder::setYOffset(int offset) {
   yDataPointOffset = offset;
 }

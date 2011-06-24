@@ -106,6 +106,9 @@ float marker_lat  = 40.0;
 float ref_long = 0.0;
 float ref_lat = 0.0;
 
+// Global scaling factor.
+int scaleFactor;
+
 MarkerPin *vesselMarker;
 SoCoordinate3 *vesselTrackCoords;
 SoLineSet *vesselTrack;
@@ -147,6 +150,7 @@ void updateMarkerPosition(SoSeparator *markers, POSITIONDATA_MSG *pos_msg) {
   std::map<std::string, MarkerPin*>::iterator itr = markerMap.find(std::string(pos_msg->name));
   if (itr == markerMap.end()) {
     m = new MarkerPin();
+    m->setScalingFactor(scaleFactor);
     m->setLabel(std::string(pos_msg->name).c_str());
     m->setReferencePosition(ref_lat, ref_long);
     m->setLocation(pos_msg->lattitude, pos_msg->longitude);
@@ -169,6 +173,7 @@ void updatePositionCallback(void *userData,  SoSensor *sensor) {
   NML positiondata_nml(ex_format, "position_buf1", "TerrainViewer", "../config.nml");
   switch(positiondata_nml.read()) {
     case -1:
+
       std::cout << "An RCS communication error has occurred." << std::endl;
       break;
     case 0:
@@ -346,6 +351,7 @@ void help()
   std::cout << "\t-x x-offset\t\tNumber of columns of data to skip (from the left)." << std::endl;
   std::cout << "\t-y y-offset\t\tNumber of rows of data to skip (from the top)." << std::endl;
   std::cout << "\t-s size\t\tSize of the plotted map." << std::endl;
+  std::cout << "\t-S scale\t\tScaling factor (default: 100000)." << std::endl;
   std::cout << "\t-a algorithm\t\tAlgorithm of terrain visualization. (default: roam)"
     << std::endl;
   std::cout << "\t\tbrutalforce\t\tBrutal force terrain rendering." <<
@@ -379,7 +385,7 @@ int main(int argc, char * argv[])
 
   /* Get program arguments. */
   int command = 0;
-  while ((command = getopt(argc, argv, "h:x:y:s:a:e:r:g:fc")) != -1)
+  while ((command = getopt(argc, argv, "h:x:y:s:S:a:e:r:g:fc")) != -1)
   {
     switch (command)
     {
@@ -414,6 +420,11 @@ int main(int argc, char * argv[])
       case 's':
       {
         sscanf(optarg, "%d", &edgeSize);
+      }
+      /* Scaling factor. */
+      case 'S':
+      {
+        sscanf(optarg, "%d", &scaleFactor);
       }
       break;
       /* X offset in data points. */
@@ -525,6 +536,7 @@ int main(int argc, char * argv[])
   terrainBuilder.setHeight(height);
   terrainBuilder.setWidth(width);
   terrainBuilder.initialize();
+  terrainBuilder.setScalingFactor(scaleFactor);
   terrainBuilder.setYOffset(yOffset);
   terrainBuilder.setXOffset(xOffset);
 
@@ -551,6 +563,7 @@ int main(int argc, char * argv[])
   SoResetTransform *resetForTerrain = new SoResetTransform();
 
   MarkerPin *marker = new MarkerPin();
+  marker->setScalingFactor(scaleFactor);
   marker->setReferencePosition(ref_lat, ref_long);
   marker->setLabel("San Francisco");
   marker->setLocation(marker_lat, marker_long);
@@ -562,6 +575,7 @@ int main(int argc, char * argv[])
        marker);
 
   vesselMarker = new MarkerPin();
+  vesselMarker->setScalingFactor(scaleFactor);
   vesselMarker->setReferencePosition(ref_lat, ref_long);
   vesselMarker->setLabel("Vessel");
   vesselMarker->setLocation(37.5, -122.0);
@@ -668,7 +682,7 @@ int main(int argc, char * argv[])
   render_area->show();
   render_area->setFullScreen(is_full_screen);
 
-  camera->position.setValue(3.79 , 0, 1);
+  camera->position.setValue(0 , 0, 1);
 
   // Use a SoIdleSensor to update marker position, this is because
   // we can't add new markers when the tree is still being traversed
