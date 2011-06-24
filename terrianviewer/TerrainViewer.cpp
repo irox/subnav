@@ -343,6 +343,9 @@ void help()
     "[-r triangle_count] [-g tile_size] [-f] [-c]" << std::endl;
   std::cout << "\t-h heightmap\t\tTerrain data, in the format \"lat long depth\"." <<
     std::endl;
+  std::cout << "\t-x x-offset\t\tNumber of columns of data to skip (from the left)." << std::endl;
+  std::cout << "\t-y y-offset\t\tNumber of rows of data to skip (from the top)." << std::endl;
+  std::cout << "\t-s size\t\tSize of the plotted map." << std::endl;
   std::cout << "\t-a algorithm\t\tAlgorithm of terrain visualization. (default: roam)"
     << std::endl;
   std::cout << "\t\tbrutalforce\t\tBrutal force terrain rendering." <<
@@ -367,12 +370,16 @@ int main(int argc, char * argv[])
   int triangle_count = 1000;
   int tile_size = 33;
   int pixel_error = 6;
+  int edgeSize = 4096;
+  int xOffset = 0;
+  int yOffset = 0;
+
   SbBool is_full_screen = FALSE;
   SbBool is_frustrum_culling = TRUE;
 
   /* Get program arguments. */
   int command = 0;
-  while ((command = getopt(argc, argv, "h:a:e:r:g:fc")) != -1)
+  while ((command = getopt(argc, argv, "h:x:y:s:a:e:r:g:fc")) != -1)
   {
     switch (command)
     {
@@ -401,6 +408,22 @@ int main(int argc, char * argv[])
         {
           algorithm = ID_ALG_BRUAL_FORCE;
         }
+      }
+      break;
+      /* Size of the plot map, in data points a long one edge (map is a square). */
+      case 's':
+      {
+        sscanf(optarg, "%d", &edgeSize);
+      }
+      break;
+      /* X offset in data points. */
+      case 'x':      {
+        sscanf(optarg, "%d", &xOffset);
+      }
+      break;
+      /* Y offset in data points. */
+      case 'y':      {
+        sscanf(optarg, "%d", &yOffset);
       }
       break;
       /* Pixel error of rendering. */
@@ -458,14 +481,14 @@ int main(int argc, char * argv[])
   // are multiples of 1024.  The +1 maybe due
   // to some sloppiness some later in the code
   // (i.e. "<" vs "<=" or something).
-  int width = 1024 * 4 + 1;
+  int width = edgeSize +1; // 1024 + 1;// 1024 * 4 + 1;
   height = width;
 
   PR_INIT_PROFILER();
 
   /* Set environment variables. */
   //putenv("IV_SEPARATOR_MAX_CACHES=0");
-  putenv("COIN_SHOW_FPS_COUNTER=1");
+  putenv((char*)"COIN_SHOW_FPS_COUNTER=1");
   //putenv("COIN_AUTO_CACHING=0");
 
   /* Create window. */
@@ -502,6 +525,9 @@ int main(int argc, char * argv[])
   terrainBuilder.setHeight(height);
   terrainBuilder.setWidth(width);
   terrainBuilder.initialize();
+  terrainBuilder.setYOffset(yOffset);
+  terrainBuilder.setXOffset(xOffset);
+
   terrainBuilder.loadXYZFile(heightmap_name, 4801 * 4801);
 
   SoTexture2 *texture = terrainBuilder.getTexture();
