@@ -54,6 +54,7 @@ class TerrainBuilder {
     void processColorFor(float);
     void standardProcessColorFor(float);
     void experimentalProcessColorFor(float);
+    void K350DepthColor(float depth);
 
     int colorMap;
     float lastDepth;

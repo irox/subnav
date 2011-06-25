@@ -585,11 +585,9 @@ int main(int argc, char * argv[])
   vesselMarker = new MarkerPin();
   vesselMarker->setScalingFactor(scaleFactor);
   vesselMarker->setReferencePosition(ref_lat, ref_long);
-  vesselMarker->setLabel("Vessel");
-  vesselMarker->setLocation(37.5, -122.0);
+  vesselMarker->setLabel("Farralon");
+  vesselMarker->setLocation(37.7, -123.0);
 
-  vesselTrack = new SoLineSet();
-  vesselTrackCoords = new SoCoordinate3();
   /* Connect scene graph nodes. */
   root->ref();
   root->addChild(style);
@@ -612,8 +610,7 @@ int main(int argc, char * argv[])
   }
   separator->addChild(markers);
   separator->addChild(marker->getSoMarker());
-  separator->addChild(vesselTrackCoords);
-  separator->addChild(vesselTrack);
+  separator->addChild(vesselMarker->getSoMarker());
 
   switch (algorithm)
   {

@@ -40,7 +40,7 @@ void TerrainBuilder::processColorFor(float depth) {
       case TerrainBuilder::EXPERIMENTAL_COLOR:
         experimentalProcessColorFor(depth);
       default:
-        experimentalProcessColorFor(depth);
+        K350DepthColor(depth); //experimentalProcessColorFor(depth);
     }
     lastDepth = depth;
   } else {
@@ -75,6 +75,59 @@ void TerrainBuilder::standardProcessColorFor(float depth) {
 bool isBoundary(float lastDepth, float depth, float targetDepth) {
   return ((depth <= targetDepth && lastDepth > targetDepth) ||
           (depth >= targetDepth && lastDepth < targetDepth));
+}
+
+void TerrainBuilder::K350DepthColor(float depth) {
+  int contourSpacing = 500;
+  int contourZone = int(depth / contourSpacing);
+  int oldContourZone = int(lastDepth / contourSpacing);
+  if (depth < -10 && contourZone != oldContourZone) {
+    /* draw contours */
+    lastBlue = 255;
+    lastRed = 255;
+    lastGreen = 255;
+    forceColorMapCalc = true;
+    skipColorMapCount = 2;
+  } else if (isBoundary(lastDepth, depth, -40)) {
+    /* SCUBA max contour. */
+    lastBlue = 0;
+    lastRed = 255;
+    lastGreen = 0;
+    forceColorMapCalc = true;
+    skipColorMapCount = 2;
+  } else if (isBoundary(lastDepth, depth, -105)) {
+    /* K350 max contour. */
+    lastBlue = 0;
+    lastRed = 255;
+    lastGreen = 0;
+    forceColorMapCalc = true;
+    skipColorMapCount = 2;
+  } else if (depth> -40 && depth <= 0) {
+    /* SCUBA depth */
+    if (depth >= -2.0) {
+      depth = -2.0;
+    }
+    lastBlue = 255;
+    lastRed = 0;
+    lastGreen = 165 + int(depth*2);
+  } else if (depth> -105 && depth <= -40) {
+    /* K350 depth */
+    lastBlue = 150 + (40 + int(depth)) * 2 ;
+    lastRed = 0;
+    lastGreen = 65 + (40 + int(depth));
+  } else if (depth < -105 && depth > -210) {
+    lastBlue = 0;
+    lastRed = 255 + 105 + int(depth);
+    lastGreen = 0;
+  } else if (depth < -210) {
+    lastBlue = (depth - 600) / 23;
+    lastGreen = 0;
+    lastRed = (depth - 600) / 23;
+  } else {
+    lastBlue = depth < 0 ? depth / 23 : 0;
+    lastGreen = depth > 0 ? int(depth) % 255 : int(depth) %  250;
+    lastRed = depth > 0 ? 50 + depth / 15 : 0;
+  }
 }
 
 /* Depth coloring in bands based on:
