@@ -9,7 +9,7 @@ class MarkerPin {
   public:
     MarkerPin();
     MarkerPin(const char *, float, float, float, float);
-    void setLocation(float lat, float lng);
+    void setLocation(float lat, float lng, float alt);
     void setReferencePosition(float lat, float lng);
     void setScalingFactor(int scale);
     void setLabel(const char *);
@@ -34,6 +34,7 @@ class MarkerPin {
     float referenceLong;
     float currentLat;
     float currentLong;
+    float altitude;
     const char *markerLabel;
     bool vesselTracks;
     int scaleFactor;

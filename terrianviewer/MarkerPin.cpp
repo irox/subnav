@@ -19,14 +19,16 @@ MarkerPin::MarkerPin(const char *name, float refLat, float refLong, float lat, f
   currentLong = lng;
   markerLabel = name;
   scaleFactor = 100000;
+  altitude = 0.0;
 
   initialize();
   updateMarker();
 }
 
-void MarkerPin::setLocation(float lat, float lng) {
+void MarkerPin::setLocation(float lat, float lng, float alt) {
   currentLat = lat;
   currentLong = lng;
+  altitude = alt;
   updateMarker();
 }
 
@@ -36,7 +38,7 @@ void MarkerPin::setScalingFactor(int scale) {
 
 void MarkerPin::updateMarker() {
   Position loc;
-  loc.set_LLA(currentLat - referenceLat, currentLong - referenceLong, 0.0, WGS84);
+  loc.set_LLA(currentLat - referenceLat, currentLong - referenceLong, altitude, WGS84);
 
   float y = loc.get_y() / scaleFactor;
   float z = loc.get_z() / scaleFactor;

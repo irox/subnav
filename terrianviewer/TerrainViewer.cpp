@@ -133,7 +133,7 @@ void markerCallback(void *userData,  SoEventCallback * eventCB) {
   }
   
   MarkerPin *markerPin = reinterpret_cast<MarkerPin *> (userData);
-  markerPin->setLocation(marker_lat, marker_long);
+  markerPin->setLocation(marker_lat, marker_long, 0.0);
 }
 
 void timerSensorCallback(void *userData,  SoSensor *sensor) {
@@ -153,14 +153,14 @@ void updateMarkerPosition(SoSeparator *markers, POSITIONDATA_MSG *pos_msg) {
     m->setScalingFactor(scaleFactor);
     m->setLabel(std::string(pos_msg->name).c_str());
     m->setReferencePosition(ref_lat, ref_long);
-    m->setLocation(pos_msg->lattitude, pos_msg->longitude);
+    m->setLocation(pos_msg->lattitude, pos_msg->longitude, pos_msg->altitude);
 
     markers->addChild(m->getSoMarker());
     markerMap.insert(std::make_pair(std::string(pos_msg->name), m));
   } else {
     m = itr->second;
   }
-  m->setLocation(pos_msg->lattitude, pos_msg->longitude);
+  m->setLocation(pos_msg->lattitude, pos_msg->longitude, pos_msg->altitude);
 }
 
 /**
@@ -574,7 +574,7 @@ int main(int argc, char * argv[])
   marker->setScalingFactor(scaleFactor);
   marker->setReferencePosition(ref_lat, ref_long);
   marker->setLabel("San Francisco");
-  marker->setLocation(marker_lat, marker_long);
+  marker->setLocation(marker_lat, marker_long, 0.0);
 
   SoEventCallback * marker_callback = new SoEventCallback();
    marker_callback->addEventCallback(
@@ -586,7 +586,7 @@ int main(int argc, char * argv[])
   vesselMarker->setScalingFactor(scaleFactor);
   vesselMarker->setReferencePosition(ref_lat, ref_long);
   vesselMarker->setLabel("Farralon");
-  vesselMarker->setLocation(37.7, -123.0);
+  vesselMarker->setLocation(37.7, -123.0, 0.0);
 
   /* Connect scene graph nodes. */
   root->ref();
@@ -598,19 +598,21 @@ int main(int argc, char * argv[])
   separator->addChild(camera);
   separator->addChild(light);
   separator->addChild(terrainSeparator);
+  
   terrainSeparator->addChild(resetForTerrain);
   terrainSeparator->addChild(texture);
   terrainSeparator->addChild(texture_coords);
   terrainSeparator->addChild(coords);
   terrainSeparator->addChild(normals);
   terrainSeparator->addChild(normal_binding);
+  
+  separator->addChild(markers);
+  separator->addChild(marker->getSoMarker());
+  separator->addChild(vesselMarker->getSoMarker());
   // Water drawing has performance issues.
   if (drawWater) {
     separator->addChild(terrainBuilder.getWater());
   }
-  separator->addChild(markers);
-  separator->addChild(marker->getSoMarker());
-  separator->addChild(vesselMarker->getSoMarker());
 
   switch (algorithm)
   {
