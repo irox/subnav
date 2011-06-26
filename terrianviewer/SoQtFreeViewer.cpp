@@ -165,6 +165,12 @@ SbBool SoQtFreeViewer::processSoKeyboardEvent(const SoKeyboardEvent *
   SbVec3f old_position = camera->position.getValue();
   SbRotation old_orientation = camera->orientation.getValue();
 
+  float speed = 0.01;
+  if (event->wasAltDown())
+  {
+    speed = 0.1;
+  }
+
   if (SO_KEY_PRESS_EVENT(event, ESCAPE))
   {
     SoQt::exitMainLoop();
@@ -180,42 +186,42 @@ SbBool SoQtFreeViewer::processSoKeyboardEvent(const SoKeyboardEvent *
   }
   else if (SO_KEY_PRESS_EVENT(event, A))
   {
-    SbVec3f diff_position(-0.01f, 0.0f, 0.0f);
+    SbVec3f diff_position(speed, 0.0f, 0.0f);
     old_orientation.multVec(diff_position, diff_position);
     camera->position = old_position + diff_position;
     return TRUE;
   }
   else if (SO_KEY_PRESS_EVENT(event, D))
   {
-    SbVec3f diff_position(0.01f, 0.0f, 0.0f);
+    SbVec3f diff_position(speed, 0.0f, 0.0f);
     old_orientation.multVec(diff_position, diff_position);
     camera->position = old_position + diff_position;
     return TRUE;
   }
   else if (SO_KEY_PRESS_EVENT(event, Q))
   {
-    SbVec3f diff_position(0.0f, -0.01f, 0.0f);
+    SbVec3f diff_position(0.0f, -speed, 0.0f);
     old_orientation.multVec(diff_position, diff_position);
     camera->position = old_position + diff_position;
     return TRUE;
   }
   else if (SO_KEY_PRESS_EVENT(event, E))
   {
-    SbVec3f diff_position(0.0f, 0.01f, 0.0f);
+    SbVec3f diff_position(0.0f, speed, 0.0f);
     old_orientation.multVec(diff_position, diff_position);
     camera->position = old_position + diff_position;
     return TRUE;
   }
   else if (SO_KEY_PRESS_EVENT(event, W))
   {
-    SbVec3f diff_position(0.0f, 0.0f, -0.01f);
+    SbVec3f diff_position(0.0f, 0.0f, -speed);
     old_orientation.multVec(diff_position, diff_position);
     camera->position = old_position + diff_position;
     return TRUE;
   }
   else if (SO_KEY_PRESS_EVENT(event, S))
   {
-    SbVec3f diff_position(0.0f, 0.0f, 0.01f);
+    SbVec3f diff_position(0.0f, 0.0f, speed);
     old_orientation.multVec(diff_position, diff_position);
     camera->position = old_position + diff_position;
     return TRUE;
