@@ -61,9 +61,8 @@ AC_ARG_WITH([soterrain], [AS_HELP_STRING([--with-soterrain]),
   [SOTERRAIN_PATH=/usr])
 AC_SUBST(SOTERRAIN_PATH)
 
-LDFLAGS=" -L$SOTERRAIN_PATH/lib -lSoTerrain $LDFLAGS"
-# TODO(irox): This is really pulling in libnav headers, add separate check/arg.
-CXXFLAGS=" -I$SOTERRAIN_PATH/include $CXXFLAGS"
+LDFLAGS="-L$SOTERRAIN_PATH/lib -lSoTerrain $LDFLAGS"
+CXXFLAGS="-I$SOTERRAIN_PATH/include $CXXFLAGS"
 
 # Set SoTerrain includes.
 AC_ARG_WITH([soterrain-includes], [AS_HELP_STRING([--with-soterrain-includes]),
@@ -71,7 +70,23 @@ AC_ARG_WITH([soterrain-includes], [AS_HELP_STRING([--with-soterrain-includes]),
   [SOTERRAIN_INCLUDE_PATH=$withval],
   [SOTERRAIN_INCLUDE_PATH=/usr/include])
 AC_SUBST(SOTERRAIN_INCLUDE_PATH)
-CXXFLAGS=" -I $SOTERRAIN_INCLUDE_PATH $CXXFLAGS"
+CXXFLAGS="-I $SOTERRAIN_INCLUDE_PATH $CXXFLAGS"
+
+AC_ARG_WITH([rcslib], [AS_HELP_STRING([--with-rcslib]),
+  [set location of rcslib install (default=/usr/)]],
+  [RCSLIB_PATH=$withval],
+  [RCSLIB_PATH=/usr/include])
+AC_SUBST(RCSLIB_PATH)
+CXXFLAGS="-I $RCSLIB_PATH/include $CXXFLAGS"
+LDFLAGS="-L$RCSLIB_PATH/lib $LDFLAGS"
+
+AC_ARG_WITH([libnav], [AS_HELP_STRING([--with-libnav]),
+  [set location of rcslib install (default=/usr/)]],
+  [LIBNAV_PATH=$withval],
+  [LIBNAV_PATH=/usr/include])
+AC_SUBST(LIBNAV_PATH)
+CXXFLAGS="-I $LIBNAV_PATH/include $CXXFLAGS"
+LDFLAGS="-L$LIBNAV_PATH/lib $LDFLAGS"
 
 # Compilation with debugging informations.
 AC_ARG_ENABLE(debug, [AS_HELP_STRING([--enable-debug],
