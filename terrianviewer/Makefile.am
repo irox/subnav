@@ -16,4 +16,4 @@ TestPositionServer_CPPFLAGS = $(AM_CPPFLAGS)
 TestPositionServer_LDFLAGS = -lrcs
 
 nmlPosition_n.cc:
-	java -jar ../CodeGenCmdLine.jar nmlPosition.h
+	@RCSLIB_PATH@/bin/CodeGen.sh nmlPosition.h
